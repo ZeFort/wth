@@ -1,4 +1,4 @@
-var socket = io.connect('10.168.1.36:3010');
+var socket = io.connect('10.168.1.29:3010');
 
 socket.on('connectedUsers', function(msg) {
     var users = msg.users;
