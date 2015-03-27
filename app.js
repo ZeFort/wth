@@ -12,7 +12,7 @@ device.enableDeviceHelpers(app);
 var connectedUsers = [];
 
 http.listen(3010, '10.168.1.36');
-
+    
 app.get('/', function(req, res) {
     if (!res.locals.is_desktop) res.redirect('/mobile');
     else res.redirect('/desktop');
