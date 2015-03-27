@@ -83,11 +83,11 @@ $(function() {
             balls[msg.id] = addSphere(scene, msg.x, 0, msg.z, 0, msg.color || 0xabcdef);
         }
         var x = msg.x;
-        var z = msg.z;
+        var y = msg.y;
         if (!msg.id || msg.id === '') msg.id = id;
         console.log('---', msg);
         balls[msg.id].position.x += x / 100;
-        balls[msg.id].position.z += z / 100;
+        balls[msg.id].position.z += y / 100;
     });
 
     socket.on('initClientMessage', function(msg) {
