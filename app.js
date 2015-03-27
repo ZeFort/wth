@@ -1,33 +1,43 @@
 var express = require('express');
+var device = require('express-device');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
+
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(device.capture());
+device.enableDeviceHelpers(app);
+
 http.listen(3010, '10.168.1.36');
 
-app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/index.html');
+app.get('/', function(req, res) {
+    if (!res.locals.is_desktop) res.redirect('/mobile');
+    else res.redirect('/desktop');
 });
 
-app.get('/mobile', function (req, res) {
-    res.sendFile(__dirname + '/mobile.html');
+app.get('/mobile', function(req, res) {
+    res.sendFile(__dirname + '/views/mobile.html');
 });
 
-io.on('connection', function(socket){
+app.get('/desktop', function(req, res) {
+    res.sendFile(__dirname + '/views/desktop.html');
+});
+
+io.on('connection', function(socket) {
 
     var clientIp = socket.request.connection.remoteAddress;
     console.log(clientIp);
 
-    socket.on('new element', function(msg){
-        io.emit('new element',msg);
+    socket.on('initClientMessage', function(msg) {
+        io.emit('initClientMessage', msg);
     });
-    socket.on('chat message', function(msg){
-        io.emit('chat message', msg);
+    socket.on('updateMessage', function(msg) {
+        io.emit('updateMessage', msg);
     });
 });
 
-var server = app.listen(3000, function () {
+var server = app.listen(3000, function() {
 
     var host = server.address().address;
     var port = server.address().port;
