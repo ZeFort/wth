@@ -18,6 +18,10 @@ app.get('/', function(req, res) {
     else res.redirect('/desktop');
 });
 
+app.get('/game', function(req, res){
+    res.sendFile(__dirname + '/views/start.html')
+});
+
 app.get('/mobile', function(req, res) {
     res.sendFile(__dirname + '/views/mobile.html');
 });
