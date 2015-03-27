@@ -3,9 +3,15 @@ var socket = io.connect('10.168.1.36:3010');
 var id = "";
 var balls = [];
 
+
 $(function() {
     id = "" + Math.floor(Math.random() * 254);
     color = Math.floor(Math.random() * 0xffffff);
+
+    $(".color-mobile").css({
+        "background": "#"+color.toString(16)
+    });
+
     socket.emit('updateMessage', {
         id: id,
         x: 1,
