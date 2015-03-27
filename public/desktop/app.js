@@ -1,4 +1,4 @@
-var socket = io.connect('10.168.1.36:3010');
+var socket = io.connect('10.168.0.115:3010');
 
 var id = "";
 var balls = [];
