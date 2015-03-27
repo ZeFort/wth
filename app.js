@@ -4,10 +4,14 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
 app.use(express.static(path.join(__dirname, 'public')));
-http.listen(3010, '178.62.74.94');
+http.listen(3010, '10.168.1.36');
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
+});
+
+app.get('/mobile', function (req, res) {
+    res.sendFile(__dirname + '/mobile.html');
 });
 
 io.on('connection', function(socket){
@@ -23,7 +27,7 @@ io.on('connection', function(socket){
     });
 });
 
-var server = app.listen(3011, function () {
+var server = app.listen(3000, function () {
 
     var host = server.address().address;
     var port = server.address().port;
