@@ -92,6 +92,5 @@ $(function() {
 
     socket.on('initClientMessage', function(msg) {
         console.log(msg);
-
     });
 });

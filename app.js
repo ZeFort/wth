@@ -8,8 +8,10 @@ var path = require('path');
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(device.capture());
 device.enableDeviceHelpers(app);
-//http.listen(3010, '178.62.74.94');
-http.listen(3010, 'localhost');
+
+var connectedUsers = [];
+
+http.listen(3010, '10.168.1.29');
 
 app.get('/', function(req, res) {
     if (!res.locals.is_desktop) res.redirect('/mobile');
@@ -25,15 +27,40 @@ app.get('/desktop', function(req, res) {
 });
 
 io.on('connection', function(socket) {
-
-    var clientIp = socket.request.connection.remoteAddress;
-    console.log(clientIp);
+    var clientIp = socket.id;
+    connectedUsers.push(clientIp);
+    console.log('Connected:', clientIp);
+    io.emit('connectedUser', {
+        ip: clientIp
+    });
 
     socket.on('initClientMessage', function(msg) {
         io.emit('initClientMessage', msg);
     });
+
+    socket.on('connectedUsers', function(msg) {
+        io.emit('connectedUsers', {
+            users: connectedUsers
+        });
+    });
+
     socket.on('updateMessage', function(msg) {
         io.emit('updateMessage', msg);
+    });
+
+
+    socket.on('disconnect', function(socket) {
+        console.log('Disconnected:', clientIp);
+        var i = connectedUsers.indexOf(clientIp);
+        if (i > -1) {
+            connectedUsers.splice(i, 1);
+        }
+        io.emit('disconnectedUser', {
+            ip: clientIp
+        });
+        io.emit('connectedUsers', {
+            users: connectedUsers
+        });
     });
 });
 

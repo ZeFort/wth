@@ -1,5 +1,16 @@
 var socket = io.connect('10.168.1.36:3010');
 
+socket.on('connectedUsers', function(msg) {
+    var users = msg.users;
+    $('.ids').empty();
+    for (var i = users.length - 1; i >= 0; i--) {
+        $('.ids').append(users[i]);
+        $('.ids').append('<br/>');
+    }
+});
+
+socket.emit('connectedUsers', {});
+
 var id = "";
 var balls = [];
 
