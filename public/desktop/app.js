@@ -1,7 +1,9 @@
-var socket = io.connect('10.168.1.36:3010');
+var socket = io.connect('10.168.0.115:3010');
 
 var id = "";
 var balls = [];
+
+var scene, camera, renderer;
 
 $(function() {
 
@@ -33,39 +35,79 @@ $(function() {
         return plane;
     }
 
-    var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    var renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMapEnabled = true;
-    addPlane(scene, 10, 1, 10, 0, 0, 0);
-    addPlane(scene, 10, 1, 10, 10, 0, 0);
-    addPlane(scene, 10, 1, 10, 0, 0, 10);
-    addPlane(scene, 10, 1, 10, 10, 0, 10);
-    // position and point the camera to the center of the scene
-    camera.position.x = -30;
-    camera.position.y = 40;
-    camera.position.z = 30;
-    camera.lookAt(scene.position);
-    // add subtle ambient lighting
-    var ambientLight = new THREE.AmbientLight(0x0c0c0c);
-    scene.add(ambientLight);
-    // add spotlight for the shadows
-    var spotLight = new THREE.SpotLight(0xffffff);
-    spotLight.position.set(-40, 60, -10);
-    spotLight.castShadow = true;
-    scene.add(spotLight);
-    // add the output of the renderer to the html element
-    $("body").append(renderer.domElement);
-    render();
+    init();
+    animate();
 
-    function render() {
+    function init(){
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMapEnabled = true;
+
+        generateTiles(12);
+
+        // position and point the camera to the center of the scene
+        updateCameraPosition(camera, 40);
+        camera.lookAt(scene.position);
+        // add subtle ambient lighting
+        var ambientLight = new THREE.AmbientLight(0x0c0c0c);
+        scene.add(ambientLight);
+        // add spotlight for the shadows
+        var spotLight = new THREE.SpotLight(0xffffff);
+        spotLight.position.set(-40, 60, -10);
+        spotLight.castShadow = true;
+        scene.add(spotLight);
+        // add the output of the renderer to the html element
+        $("body").append(renderer.domElement);
+    }
+
+    function animate() {
         // render using requestAnimationFrame
         //x.position.x += 0.1;
-        requestAnimationFrame(render);
+        requestAnimationFrame(animate);
+        render();
+    }
+
+    var framesCount = 0;
+    function render() {
+        var longestX = 0; //we are moving to -inf by X axis
+
+        for(var key in balls){
+            if(balls.hasOwnProperty(key)){
+                if(balls[key].position.x < longestX)
+                    longestX = balls[key].position.x;
+            }
+        }
+
+        updateCameraPosition(camera, longestX + 40);
+
+        if(framesCount++ >= 30) {
+            framesCount = 0;
+            generateTiles();
+        }
+
         renderer.render(scene, camera);
     }
 
+
+    function updateCameraPosition(cam, x) {
+        cam.position.x = x;
+        cam.position.y = 23.094; //Math.tan(Math.PI / 6) * x;
+        cam.position.z = 0;
+    }
+
+    var rowCount = 0;
+    function generateTiles(count){
+        count = count || 1;
+
+        for(var i = 0; i < count; i++, rowCount++) {
+            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 5, 0x9b59b6);
+            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 15, 0xe67e22);
+            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -5, 0xe74c3c);
+            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -15, 0x2ecc71);
+        }
+    }
 
     id = "" + Math.floor(Math.random() * 254);
     color = Math.floor(Math.random() * 0xffffff);
@@ -80,7 +122,7 @@ $(function() {
     socket.on('updateMessage', function(msg) {
         var that = this;
         if (!balls[msg.id]) {
-            balls[msg.id] = addSphere(scene, msg.x, 0, msg.z, 0, msg.color || 0xabcdef);
+            balls[msg.id] = addSphere(scene, 1, msg.x, 0, msg.z, msg.color || 0xabcdef);
         }
         var x = msg.x;
         var y = msg.y;
