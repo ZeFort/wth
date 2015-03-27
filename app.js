@@ -4,7 +4,8 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
 app.use(express.static(path.join(__dirname, 'public')));
-http.listen(3010, '178.62.74.94');
+//http.listen(3010, '178.62.74.94');
+http.listen(3010, 'localhost');
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
