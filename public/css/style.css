@@ -140,3 +140,32 @@ body, html {
   box-shadow: 0 5px 0 #7f8c8d;
   z-index: 15;
 }
+
+.disabled .player, .disabled .score{
+	color: #bdc3c7;
+}
+
+.result-board {
+  display: none;
+  position: absolute;
+  margin: auto;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 45px;
+  color: #d35400;
+  background: #bdc3c7;
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow: 0 5px 0 #7f8c8d;
+  z-index: 15;
+}
+
+.winner-name, .winner-score {
+  background: #bdc3c7;
+  color: #2c3e50;
+}
+
+.winner-score {
+  color: #c0392b;
+}

@@ -12,7 +12,8 @@ setInterval(function() {
 
 var balls = [];
 var readyPlayerCount = 0;
-var needToStart = 1;
+var needToStart = 2;
+var activePlayers = needToStart;
 var gameStarted = false;
 
 var scene, camera, renderer, backgroundScene, backgroundCamera;
@@ -109,6 +110,7 @@ $(function() {
 
         //handleCollisions();
         handleCrossingTheLine();
+        handleInvisiblePlayers();
         updateCameraPosition(camera, longestX + 40);
 
         if (framesCount++ >= 15) {
@@ -118,6 +120,21 @@ $(function() {
 
         //renderer.render(backgroundScene , backgroundCamera );
         renderer.render(scene, camera);
+
+
+        if (activePlayers <= 1) {
+            gameStarted = false;
+
+            for (var key in balls) {
+                if (balls.hasOwnProperty(key) && balls[key].active) {
+                    showResultBoard(balls[key].user + ' wins!', 'Score: ' + Math.abs(balls[key].position.x - 1).toFixed(0) + ' pts');
+                    socket.emit('playerWin', {
+                        user: balls[key].user,
+                        score: Math.abs(balls[key].position.x - 1).toFixed(0)
+                    });
+                }
+            }
+        }
     }
 
     function getFirstPlayerPosition() {
@@ -157,13 +174,62 @@ $(function() {
         //write swap speeds logic here
     }
 
+    function handleInvisiblePlayers() {
+        var longest = getFirstPlayerPosition() + 30 + R;
+        for (var key in balls) {
+            if (balls.hasOwnProperty(key)) {
+                if (balls[key].position.x > longest) {
+                    if (balls[key].active) {
+                        activePlayers--;
+                        $('.item[user="' + balls[key].user + '"]').addClass('disabled');
+                        var message = (activePlayers > 0) ? 'playerLose' : 'playerWin';
+                        socket.emit(message, {
+                            user: balls[key].user,
+                            score: Math.abs(balls[key].position.x - 1).toFixed(0)
+                        });
+                    }
+                    balls[key].active = false;
+                }
+            }
+        }
+    }
+
     function handleCrossingTheLine() {
         for (var key in balls) {
             if (balls.hasOwnProperty(key)) {
+                if (gameStarted) {
+                    if (key == '208')
+                        balls[key].position.x -= 0.3;
+                    else
+                        balls[key].position.x -= 0.01;
+                }
+                if (balls[key].active) {
+                    $('.item[user="' + balls[key].user + '"] .score').html(Math.abs(balls[key].position.x - 1).toFixed(0) + ' pts');
+                }
                 if (balls[key].position.z < -20) {
+                    if (balls[key].active) {
+                        activePlayers--;
+                        $('.item[user="' + balls[key].user + '"]').addClass('disabled');
+                        var message = (activePlayers > 0) ? 'playerLose' : 'playerWin';
+                        socket.emit(message, {
+                            user: balls[key].user,
+                            score: Math.abs(balls[key].position.x - 1).toFixed(0)
+                        });
+                    }
+                    balls[key].active = false;
                     balls[key].position.y -= 0.8;
                     balls[key].position.z -= 0.4;
                 } else if (balls[key].position.z > 20) {
+                    if (balls[key].active) {
+                        balls[key].active = false;
+                        activePlayers--;
+                        $('.item[user="' + balls[key].user + '"]').addClass('disabled');
+                        var message = (activePlayers > 0) ? 'playerLose' : 'playerWin';
+                        socket.emit(message, {
+                            user: balls[key].user,
+                            score: Math.abs(balls[key].position.x - 1).toFixed(0)
+                        });
+                    }
                     balls[key].position.y -= 0.8;
                     balls[key].position.z += 0.4;
                 }
@@ -193,29 +259,19 @@ $(function() {
         }
     }
 
-    id = "" + Math.floor(Math.random() * 254);
-    color = Math.floor(Math.random() * 0xffffff);
-    balls[id] = addSphere(scene, R, 0, 5, 0, color);
-    socket.emit('updateMessage', {
-        id: id,
-        x: 1,
-        y: 0,
-        z: 1,
-        color: color
-    });
-
     socket.on('updateMessage', function(msg) {
         var that = this;
         if (!balls[msg.id] && !gameStarted) {
             balls[msg.id] = addSphere(scene, R, msg.x, 5, msg.z, msg.color || 0xabcdef);
+            balls[msg.id].user = msg.username;
             var scoreboardItem = "<div class='item' user='" + msg.username + "'><div class='player'>" + msg.username + "</div><div class='score'>0pts</div></div>";
             $('.scoreboard').append(scoreboardItem);
         }
+        if (!msg.id || msg.id === '') return;
+        if (!gameStarted) return;
+        if (!balls[msg.id].ready || !balls[msg.id].active) return;
         var x = msg.x;
         var y = msg.y;
-        if (!msg.id || msg.id === '') return;
-        console.log('---', msg);
-        if (!gameStarted) return;
         balls[msg.id].position.x += -(Math.abs(Math.abs(x) - 10)) / 15;
         balls[msg.id].position.z += (-y) / 10;
     });
@@ -229,6 +285,7 @@ $(function() {
         console.log(msg);
         if (balls[msg.id] && !balls[msg.id].ready) {
             balls[msg.id].ready = true;
+            balls[msg.id].active = true;
             readyPlayerCount++;
             $('.elapsed-players').html((needToStart - readyPlayerCount) + '');
             if (readyPlayerCount === needToStart) {
@@ -251,4 +308,13 @@ $(function() {
             }
         }
     });
+
 });
+
+function showResultBoard(user, score) {
+    $('.winner-name').html(user);
+    $('.winner-score').html(score);
+    $('.result-board').css({
+        display: 'block'
+    });
+}

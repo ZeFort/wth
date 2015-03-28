@@ -135,7 +135,7 @@
   font-size : 18px;
   padding: 4px;
   position: absolute;
-  width: 80px;
+  width: 100px;
   top: -108px;
   left: 40px;
   background: #e67e22;
@@ -180,4 +180,33 @@
 
 .connected {
   background: #2ecc71;
+}
+
+
+.result-board {
+  display: none;
+  position: absolute;
+  margin: auto;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: rotate(-90deg) translate(0, -100%);
+      -ms-transform: rotate(-90deg) translate(0, -100%);
+          transform: rotate(-90deg) translate(0, -100%);
+  font-size: 45px;
+  color: #d35400;
+  background: #bdc3c7;
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow: 0 5px 0 #7f8c8d;
+  width: 250px;
+  z-index: 15;
+}
+
+.winner-name, .winner-score {
+  background: #bdc3c7;
+  color: #2c3e50;
+}
+
+.winner-score {
+  color: #c0392b;
 }

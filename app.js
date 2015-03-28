@@ -59,6 +59,14 @@ io.on('connection', function(socket) {
         io.emit('initClientMessage', msg);
     });
 
+    socket.on('playerLose', function(msg) {
+        io.emit('playerLose', msg);
+    });
+
+    socket.on('playerWin', function(msg) {
+        io.emit('playerWin', msg);
+    });
+
     socket.on('connectedUsers', function(msg) {
         io.emit('connectedUsers', {
             users: connectedUsers

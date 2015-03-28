@@ -22,6 +22,17 @@ var color = '';
 var balls = [];
 var username = '';
 
+socket.on('playerLose', function(msg) {
+    if (msg.user == username)
+        showResultBoard('You lose :(', 'Score: ' + msg.score + ' pts');
+});
+
+socket.on('playerWin', function(msg) {
+    if (msg.user == username)
+        showResultBoard('You wins', 'Score: ' + msg.score + ' pts');
+});
+
+
 $(function() {
     username = '';
 
@@ -110,5 +121,12 @@ $(function() {
             });
         }
     });
-
 });
+
+function showResultBoard(user, score) {
+    $('.winner-name').html(user);
+    $('.winner-score').html(score);
+    $('.result-board').css({
+        display: 'block'
+    });
+}
