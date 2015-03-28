@@ -12,18 +12,23 @@
 	</script>
 </head>
 <body>
+
+    <div class='status disconnected'></div>
     <div class='login'>
         <div class='container'>
             <input class='username' placeholder='Username' id='username'/>
             <div class='accept'>Ready!</div>
         </div>
     </div>
-    It's mobile part and just handle motion.
-    <h1>XYZ_PAD</h1>
-    <button class="ready-btn">Ready to Play!</button><br/>
-    Connected users:
-    <div class="ids"></div>
-    <div class="rotation"></div>
+    <div class='coords'>
+      <div class='ox'/><div class='oy'/><div class='oz'/>
+      <div class='x'>x: 0</div>
+      <div class='y'>y: 0</div>
+      <div class='z'>z: 0</div>
+      <div class='color'></div>
+      <div class='button ready-btn'>Im ready!</div>
+    </div>
+
     <script src="/libs/socket.io-client/socket.io.js"></script>
     <script src="/libs/jquery/dist/jquery.min.js"></script>
     <script src="/mobile/app.js"></script></body>

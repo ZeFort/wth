@@ -1,4 +1,14 @@
 var socket = io.connect(window.ip + ':3010');
+setInterval(function() {
+    var status = socket.connected;
+    if (status) {
+        $('.status').addClass('connected');
+        $('.status').removeClass('disconnected');
+    } else {
+        $('.status').removeClass('connected');
+        $('.status').addClass('disconnected');
+    }
+}, 1000);
 
 var balls = [];
 var readyPlayerCount = 0;

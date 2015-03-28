@@ -1,12 +1,18 @@
 var socket = io.connect(window.ip + ':3010');
 
+setInterval(function() {
+    var status = socket.connected;
+    if (status) {
+        $('.status').addClass('connected');
+        $('.status').removeClass('disconnected');
+    } else {
+        $('.status').removeClass('connected');
+        $('.status').addClass('disconnected');
+    }
+}, 1000);
+
 socket.on('connectedUsers', function(msg) {
     var users = msg.users;
-    $('.ids').empty();
-    for (var i = users.length - 1; i >= 0; i--) {
-        $('.ids').append(users[i]);
-        $('.ids').append('<br/>');
-    }
 });
 
 socket.emit('connectedUsers', {});
@@ -24,6 +30,7 @@ $(function() {
         socket.emit('readyToPlay', {
             id: id
         });
+        $('.button').addClass('disabled');
     });
 
     $('.accept').click(function() {
@@ -57,12 +64,9 @@ $(function() {
         if (Math.abs(x) > 10) x = 10 * Math.sign(x);
         if (Math.abs(y) > 5) y = 5 * Math.sign(y);
         //if (Math.abs(z) > 5) z = 5 * Math.sign(z);
-        $('.rotation').empty();
-        $('.rotation').append(JSON.stringify({
-            x: x,
-            y: y,
-            z: z
-        }));
+        if (x) $('.x').html(x.toFixed(0));
+        if (y) $('.y').html(y.toFixed(0));
+        if (z) $('.z').html(z.toFixed(0));
         if (id != "")
             sendXYZ(x, y, z);
         else {
