@@ -2,13 +2,13 @@ var socket = io.connect('10.168.1.36:3010');
 
 var balls = [];
 var readyPlayerCount = 0;
-var needToStart = 1;
+var needToStart = 2;
 var gameStarted = false;
 
 var scene, camera, renderer;
 
 $(function() {
-
+    $('.elapsed-players').html(needToStart + '');
     var addPlane = function(scene, w, h, t, x, y, z) {
         var planeGeometry = new THREE.CubeGeometry(w, h, t, 10);
         var planeMaterial = new THREE.MeshLambertMaterial({
@@ -40,7 +40,7 @@ $(function() {
     init();
     animate();
 
-    function init(){
+    function init() {
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         renderer = new THREE.WebGLRenderer();
@@ -72,19 +72,20 @@ $(function() {
     }
 
     var framesCount = 0;
+
     function render() {
         var longestX = 0; //we are moving to -inf by X axis
 
-        for(var key in balls){
-            if(balls.hasOwnProperty(key)){
-                if(balls[key].position.x < longestX)
+        for (var key in balls) {
+            if (balls.hasOwnProperty(key)) {
+                if (balls[key].position.x < longestX)
                     longestX = balls[key].position.x;
             }
         }
 
         updateCameraPosition(camera, longestX + 40);
 
-        if(framesCount++ >= 30) {
+        if (framesCount++ >= 30) {
             framesCount = 0;
             generateTiles();
         }
@@ -100,10 +101,11 @@ $(function() {
     }
 
     var rowCount = 0;
-    function generateTiles(count){
+
+    function generateTiles(count) {
         count = count || 1;
 
-        for(var i = 0; i < count; i++, rowCount++) {
+        for (var i = 0; i < count; i++, rowCount++) {
             addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 5, 0x9b59b6);
             addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 15, 0xe67e22);
             addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -5, 0xe74c3c);
@@ -131,9 +133,10 @@ $(function() {
 
     socket.on('readyToPlay', function(msg) {
         console.log(msg);
-        if(balls[msg.id] && !balls[msg.id].ready) {
+        if (balls[msg.id] && !balls[msg.id].ready) {
             balls[msg.id].ready = true;
-            readyPlayerCount ++;
+            readyPlayerCount++;
+            $('.elapsed-players').html((needToStart - readyPlayerCount) + '');
             if (readyPlayerCount === needToStart) {
                 socket.emit('gameStarted', {});
                 gameStarted = true;

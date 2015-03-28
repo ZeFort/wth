@@ -13,7 +13,7 @@ var connectedUsers = [];
 
 http.listen(3010, '10.168.1.36');
     
-app.get('/', function(req, res) {
+app.get('/start', function(req, res) {
     if (!res.locals.is_desktop) res.redirect('/mobile');
     else res.redirect('/desktop');
 });
@@ -21,6 +21,11 @@ app.get('/', function(req, res) {
 app.get('/mobile', function(req, res) {
     res.sendFile(__dirname + '/views/mobile.html');
 });
+
+app.get('/', function(req, res) {
+    res.sendFile(__dirname + '/views/index.html');
+});
+
 
 app.get('/desktop', function(req, res) {
     res.sendFile(__dirname + '/views/desktop.html');

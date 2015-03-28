@@ -1,0 +1,30 @@
+@import url(http://fonts.googleapis.com/css?family=Nova+Flat);
+
+* {
+  background: #3498db;
+  font-family: 'Nova Flat', cursive;
+}
+
+.container {
+  position: fixed;
+  margin: auto;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.title {
+  color: #ecf0f1;
+  font-size: 60px;
+}
+
+.logo {
+  position: relative;
+  margin: auto;
+  left: 50%;
+  width: 100%;
+  transform: translate(-25%, 0);
+  -webkit-transform: translate(-25%, 0);
+  content-align: center;
+}
