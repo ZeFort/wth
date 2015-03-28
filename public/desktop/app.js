@@ -4,6 +4,7 @@ var id = "";
 var balls = [];
 
 var scene, camera, renderer;
+var R = 4;
 
 $(function() {
 
@@ -22,7 +23,7 @@ $(function() {
     }
 
     var addSphere = function(scene, r, x, y, z, color) {
-        var planeGeometry = new THREE.SphereGeometry(r, 100);
+        var planeGeometry = new THREE.SphereGeometry(r, 100, 100);
         var planeMaterial = new THREE.MeshLambertMaterial({
             color: color
         });
@@ -71,15 +72,10 @@ $(function() {
 
     var framesCount = 0;
     function render() {
-        var longestX = 0; //we are moving to -inf by X axis
+        var longestX = getFirstPlayerPosition();
 
-        for(var key in balls){
-            if(balls.hasOwnProperty(key)){
-                if(balls[key].position.x < longestX)
-                    longestX = balls[key].position.x;
-            }
-        }
-
+        //handleCollisions();
+        //handleCrossingTheLine();
         updateCameraPosition(camera, longestX + 40);
 
         if(framesCount++ >= 30) {
@@ -90,6 +86,54 @@ $(function() {
         renderer.render(scene, camera);
     }
 
+    function getFirstPlayerPosition(){
+        var longestX = 0; //we are moving to -inf by X axis
+
+        for(var key in balls){
+            if(balls.hasOwnProperty(key)){
+                if(balls[key].position.x < longestX)
+                    longestX = balls[key].position.x;
+            }
+        }
+
+        return longestX;
+    }
+
+    function handleCollisions(){
+        console.log(balls);
+        for(var key in balls){
+            if(balls.hasOwnProperty(key)){
+               for(var key2 in balls){
+                    if(balls.hasOwnProperty(key2) && key !== key2){
+                        var s1 = balls[key];
+                        var s2 = balls[key2];
+
+                        if(getPythogarExpression(s1.position.x, s2.position.x, s1.position.z, s2.position.z)){
+                            swapSpeeds(s1, s2);
+                        }
+                    }
+               }
+            } 
+        }
+    }
+
+    function getPythogarExpression(x1, x2, y1, y2) {
+        return Math.Pow(x1 - x2, 2) + Math.Pow(y1 - y2, 2) <= 4 * R * R;
+    }
+
+    function swapSpeeds(sph1, sph2) {
+        //write swap speeds logic here
+    }
+
+    function handleCrossingTheLine() {
+        for(var key in balls){
+            if(balls.hasOwnProperty(key)) {
+                if(balls[key].position.z < -25 || balls[key].position.z > 25) {
+                    //delete balls[key];
+                }
+            }
+        }
+    }
 
     function updateCameraPosition(cam, x) {
         cam.position.x = x;
@@ -111,7 +155,7 @@ $(function() {
 
     id = "" + Math.floor(Math.random() * 254);
     color = Math.floor(Math.random() * 0xffffff);
-    balls[id] = addSphere(scene, 1, 0, 1, 0, color);
+    balls[id] = addSphere(scene, R, 0, 5, 0, color);
     socket.emit('updateMessage', {
         id: id,
         x: 1,
@@ -122,14 +166,14 @@ $(function() {
     socket.on('updateMessage', function(msg) {
         var that = this;
         if (!balls[msg.id]) {
-            balls[msg.id] = addSphere(scene, 1, msg.x, 0, msg.z, msg.color || 0xabcdef);
+            balls[msg.id] = addSphere(scene, R, msg.x, 5, msg.z, msg.color || 0xabcdef);
         }
         var x = msg.x;
         var y = msg.y;
         if (!msg.id || msg.id === '') msg.id = id;
         console.log('---', msg);
-        balls[msg.id].position.x += x / 100;
-        balls[msg.id].position.z += y / 100;
+        balls[msg.id].position.x += x / 20;
+        balls[msg.id].position.z += y / 20;
     });
 
     socket.on('initClientMessage', function(msg) {
