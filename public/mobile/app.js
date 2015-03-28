@@ -1,4 +1,4 @@
-var socket = io.connect('10.168.0.115:3010');
+var socket = io.connect('10.168.1.29:3010');
 
 socket.on('connectedUsers', function(msg) {
     var users = msg.users;
@@ -14,7 +14,6 @@ socket.emit('connectedUsers', {});
 var id = "";
 var balls = [];
 
-
 $(function() {
     id = "" + Math.floor(Math.random() * 254);
     color = Math.floor(Math.random() * 0xffffff);
@@ -24,7 +23,7 @@ $(function() {
             id: id
         });
     });
-    
+
     $(".color-mobile").css({
         "background": "#" + color.toString(16)
     });
@@ -42,7 +41,7 @@ $(function() {
         var x = event.accelerationIncludingGravity.x;
         var y = event.accelerationIncludingGravity.y;
         var z = (event.accelerationIncludingGravity.z);
-        if (Math.abs(x) > 5) x = 5 * Math.sign(x);
+        if (Math.abs(x) > 10) x = 10 * Math.sign(x);
         if (Math.abs(y) > 5) y = 5 * Math.sign(y);
         //if (Math.abs(z) > 5) z = 5 * Math.sign(z);
         $('.rotation').empty();

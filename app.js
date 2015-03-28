@@ -11,16 +11,25 @@ device.enableDeviceHelpers(app);
 
 var connectedUsers = [];
 
-http.listen(3010, '10.168.0.115');
-    
+http.listen(3010, '10.168.1.29');
+
 app.get('/', function(req, res) {
     if (!res.locals.is_desktop) res.redirect('/mobile');
     else res.redirect('/desktop');
 });
 
+app.get('/game', function(req, res){
+    res.sendFile(__dirname + '/views/start.html')
+});
+
 app.get('/mobile', function(req, res) {
     res.sendFile(__dirname + '/views/mobile.html');
 });
+
+app.get('/', function(req, res) {
+    res.sendFile(__dirname + '/views/index.html');
+});
+
 
 app.get('/desktop', function(req, res) {
     res.sendFile(__dirname + '/views/desktop.html');
