@@ -51,7 +51,14 @@ io.on('connection', function(socket) {
     socket.on('updateMessage', function(msg) {
         io.emit('updateMessage', msg);
     });
+    
+    socket.on('gameStarted', function(msg) {
+        io.emit('gameStarted', msg);
+    });
 
+    socket.on('readyToPlay', function(msg) {
+        io.emit('readyToPlay', msg);
+    });
 
     socket.on('disconnect', function(socket) {
         console.log('Disconnected:', clientIp);

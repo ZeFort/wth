@@ -1,7 +1,12 @@
 var socket = io.connect('10.168.1.29:3010');
 
-var id = "";
 var balls = [];
+var readyPlayerCount = 0;
+var needToStart = 1;
+var gameStarted = false;
+
+var scene, camera, renderer;
+var R = 4;
 
 $(function() {
 
@@ -20,7 +25,7 @@ $(function() {
     }
 
     var addSphere = function(scene, r, x, y, z, color) {
-        var planeGeometry = new THREE.SphereGeometry(r, 100);
+        var planeGeometry = new THREE.SphereGeometry(r, 100, 100);
         var planeMaterial = new THREE.MeshLambertMaterial({
             color: color
         });
@@ -33,43 +38,126 @@ $(function() {
         return plane;
     }
 
-    var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    var renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMapEnabled = true;
-    addPlane(scene, 10, 1, 10, 0, 0, 0);
-    addPlane(scene, 10, 1, 10, 10, 0, 0);
-    addPlane(scene, 10, 1, 10, 0, 0, 10);
-    addPlane(scene, 10, 1, 10, 10, 0, 10);
-    // position and point the camera to the center of the scene
-    camera.position.x = -30;
-    camera.position.y = 40;
-    camera.position.z = 30;
-    camera.lookAt(scene.position);
-    // add subtle ambient lighting
-    var ambientLight = new THREE.AmbientLight(0x0c0c0c);
-    scene.add(ambientLight);
-    // add spotlight for the shadows
-    var spotLight = new THREE.SpotLight(0xffffff);
-    spotLight.position.set(-40, 60, -10);
-    spotLight.castShadow = true;
-    scene.add(spotLight);
-    // add the output of the renderer to the html element
-    $("body").append(renderer.domElement);
-    render();
+    init();
+    animate();
 
-    function render() {
+    function init(){
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMapEnabled = true;
+
+        generateTiles(12);
+
+        // position and point the camera to the center of the scene
+        updateCameraPosition(camera, 40);
+        camera.lookAt(scene.position);
+        // add subtle ambient lighting
+        var ambientLight = new THREE.AmbientLight(0x0c0c0c);
+        scene.add(ambientLight);
+        // add spotlight for the shadows
+        var spotLight = new THREE.SpotLight(0xffffff);
+        spotLight.position.set(-40, 60, -10);
+        spotLight.castShadow = true;
+        scene.add(spotLight);
+        // add the output of the renderer to the html element
+        $("body").append(renderer.domElement);
+    }
+
+    function animate() {
         // render using requestAnimationFrame
         //x.position.x += 0.1;
-        requestAnimationFrame(render);
+        requestAnimationFrame(animate);
+        render();
+    }
+
+    var framesCount = 0;
+    function render() {
+        var longestX = getFirstPlayerPosition();
+
+        //handleCollisions();
+        //handleCrossingTheLine();
+        updateCameraPosition(camera, longestX + 40);
+
+        if(framesCount++ >= 30) {
+            framesCount = 0;
+            generateTiles();
+        }
+
         renderer.render(scene, camera);
     }
 
+    function getFirstPlayerPosition(){
+        var longestX = 0; //we are moving to -inf by X axis
+
+        for(var key in balls){
+            if(balls.hasOwnProperty(key)){
+                if(balls[key].position.x < longestX)
+                    longestX = balls[key].position.x;
+            }
+        }
+
+        return longestX;
+    }
+
+    function handleCollisions(){
+        console.log(balls);
+        for(var key in balls){
+            if(balls.hasOwnProperty(key)){
+               for(var key2 in balls){
+                    if(balls.hasOwnProperty(key2) && key !== key2){
+                        var s1 = balls[key];
+                        var s2 = balls[key2];
+
+                        if(getPythogarExpression(s1.position.x, s2.position.x, s1.position.z, s2.position.z)){
+                            swapSpeeds(s1, s2);
+                        }
+                    }
+               }
+            } 
+        }
+    }
+
+    function getPythogarExpression(x1, x2, y1, y2) {
+        return Math.Pow(x1 - x2, 2) + Math.Pow(y1 - y2, 2) <= 4 * R * R;
+    }
+
+    function swapSpeeds(sph1, sph2) {
+        //write swap speeds logic here
+    }
+
+    function handleCrossingTheLine() {
+        for(var key in balls){
+            if(balls.hasOwnProperty(key)) {
+                if(balls[key].position.z < -25 || balls[key].position.z > 25) {
+                    //delete balls[key];
+                }
+            }
+        }
+    }
+
+    function updateCameraPosition(cam, x) {
+        cam.position.x = x;
+        cam.position.y = 23.094; //Math.tan(Math.PI / 6) * x;
+        cam.position.z = 0;
+    }
+
+    var rowCount = 0;
+    function generateTiles(count){
+        count = count || 1;
+
+        for(var i = 0; i < count; i++, rowCount++) {
+            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 5, 0x9b59b6);
+            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 15, 0xe67e22);
+            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -5, 0xe74c3c);
+            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -15, 0x2ecc71);
+        }
+    }
 
     id = "" + Math.floor(Math.random() * 254);
     color = Math.floor(Math.random() * 0xffffff);
-    balls[id] = addSphere(scene, 1, 0, 1, 0, color);
+    balls[id] = addSphere(scene, R, 0, 5, 0, color);
     socket.emit('updateMessage', {
         id: id,
         x: 1,
@@ -77,20 +165,35 @@ $(function() {
         z: 1,
         color: color
     });
+
     socket.on('updateMessage', function(msg) {
         var that = this;
         if (!balls[msg.id]) {
-            balls[msg.id] = addSphere(scene, msg.x, 0, msg.z, 0, msg.color || 0xabcdef);
+            balls[msg.id] = addSphere(scene, R, msg.x, 5, msg.z, msg.color || 0xabcdef);
         }
         var x = msg.x;
         var y = msg.y;
-        if (!msg.id || msg.id === '') msg.id = id;
+        if (!msg.id || msg.id === '') return;
         console.log('---', msg);
-        balls[msg.id].position.x += Math.abs(x-5) / 70;
-        balls[msg.id].position.z += y / 70;
+        if (!gameStarted) return;
+        balls[msg.id].position.x += x / 100;
+        balls[msg.id].position.z += y / 100;
     });
 
     socket.on('initClientMessage', function(msg) {
         console.log(msg);
+    });
+
+    socket.on('readyToPlay', function(msg) {
+        console.log(msg);
+        if(balls[msg.id] && !balls[msg.id].ready) {
+            balls[msg.id].ready = true;
+            readyPlayerCount ++;
+            if (readyPlayerCount === needToStart) {
+                socket.emit('gameStarted', {});
+                gameStarted = true;
+                $('.waiting').remove();
+            }
+        }
     });
 });
