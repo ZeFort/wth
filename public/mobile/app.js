@@ -38,6 +38,10 @@ $(function() {
             $('#username').addClass('wrong');
             return;
         }
+        if (!socket.connected) {
+            alert('Sockets is not connected.');
+            return;
+        }
         $('.login').remove();
         if (!localStorage[username]) {
             console.log('New user');
@@ -53,6 +57,9 @@ $(function() {
             color = JSON.parse(localStorage[username]).color;
         }
         console.log(id);
+        $(".color").css({
+            "background": "#" + color.toString(16)
+        });
 
         socket.emit('updateMessage', {
             id: id,
@@ -71,9 +78,9 @@ $(function() {
             if (Math.abs(x) > 10) x = 10 * Math.sign(x);
             if (Math.abs(y) > 5) y = 5 * Math.sign(y);
             //if (Math.abs(z) > 5) z = 5 * Math.sign(z);
-            if (x) $('.x').html(x.toFixed(0));
-            if (y) $('.y').html(y.toFixed(0));
-            if (z) $('.z').html(z.toFixed(0));
+            if (x) $('.x').html('x: ' + x.toFixed(0));
+            if (y) $('.y').html('y: ' + y.toFixed(0));
+            if (z) $('.z').html('z: ' + z.toFixed(0));
             if (id != "")
                 sendXYZ(x, y, z);
             else {
@@ -104,8 +111,4 @@ $(function() {
         }
     });
 
-
-    $(".color-mobile").css({
-        "background": "#" + color.toString(16)
-    });
 });
