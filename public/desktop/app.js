@@ -17,6 +17,16 @@ socket.on('refresh', function(msg) {
     document.location.reload();
 });
 
+socket.on('disconnectUser', function(msg) {
+    console.log('disconnected', msg);
+    if (balls[msg.id]) {
+        readyPlayerCount++;
+        balls[msg.id].active = false;
+        balls[msg.id].ready = false;
+        $('.item[user="' + msg.username + '"]').remove();
+    }
+});
+
 var balls = [];
 var readyPlayerCount = 0;
 var needToStart = 2;

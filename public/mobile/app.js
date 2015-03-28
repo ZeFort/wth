@@ -129,6 +129,14 @@ $(function() {
             });
         }
     });
+
+    $(window).unload(function() {
+        socket.emit('disconnectUser', {
+            username: username,
+            id: id
+        });
+        socket.disconnect();
+    });
 });
 
 function showResultBoard(user, score) {
