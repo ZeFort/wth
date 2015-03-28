@@ -1,4 +1,14 @@
-var socket = io.connect('10.168.1.29:3010');
+var socket = io.connect(window.ip + ':3010');
+setInterval(function() {
+    var status = socket.connected;
+    if (status) {
+        $('.status').addClass('connected');
+        $('.status').removeClass('disconnected');
+    } else {
+        $('.status').removeClass('connected');
+        $('.status').addClass('disconnected');
+    }
+}, 1000);
 
 var balls = [];
 var readyPlayerCount = 0;
@@ -42,7 +52,6 @@ $(function() {
     animate();
 
     function init() {
-        balls = [];
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         renderer = new THREE.WebGLRenderer();
@@ -142,7 +151,7 @@ $(function() {
 
     id = "" + Math.floor(Math.random() * 254);
     color = Math.floor(Math.random() * 0xffffff);
-    balls[id] = addSphere(scene, R, 100, 5, 0, color);
+    balls[id] = addSphere(scene, R, 0, 5, 0, color);
     socket.emit('updateMessage', {
         id: id,
         x: 1,
@@ -159,6 +168,7 @@ $(function() {
         var x = msg.x;
         var y = msg.y;
         if (!msg.id || msg.id === '') return;
+        console.log('---', msg);
         if (!gameStarted) return;
         handleCollisions(msg.id, x, y);
     });

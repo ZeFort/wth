@@ -69,3 +69,22 @@ body, html {
 .elapsed-players {
 	color: #f1c40f;
 }
+
+.status {
+  position: fixed;
+  z-index: 1000;
+  width: 10px;
+  height: 10px;
+  bottom: 10px;
+  left: 10px;
+  border-radius: 50%;
+  border: 1px solid #7f8c8d;
+}
+
+.disconnected {
+  background: #c0392b;
+}
+
+.connected {
+  background: #2ecc71;
+}
