@@ -20,6 +20,10 @@ app.get('/start', function(req, res) {
     else res.redirect('/desktop');
 });
 
+app.get('/game', function(req, res){
+    res.sendFile(__dirname + '/views/start.html')
+});
+
 app.get('/mobile', function(req, res) {
     html.send(req, res, __dirname + '/views/mobile.html', {
         ip: ip

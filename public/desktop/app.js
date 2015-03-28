@@ -18,8 +18,8 @@ $(function() {
         var plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.receiveShadow = true;
         plane.position.x = x;
-        plane.position.y = y
-        plane.position.z = z
+        plane.position.y = y;
+        plane.position.z = z;
         scene.add(plane);
         return plane;
     }
@@ -32,8 +32,8 @@ $(function() {
         var plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.receiveShadow = true;
         plane.position.x = x;
-        plane.position.y = y
-        plane.position.z = z
+        plane.position.y = y;
+        plane.position.z = z;
         scene.add(plane);
         return plane;
     }
@@ -48,7 +48,7 @@ $(function() {
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMapEnabled = true;
 
-        generateTiles(12);
+        generateTiles(2000);
 
         // position and point the camera to the center of the scene
         updateCameraPosition(camera, 40);
@@ -149,7 +149,6 @@ $(function() {
     }
 
     var rowCount = 0;
-
     function generateTiles(count) {
         count = count || 1;
         for(var i = 0; i < count; i++, rowCount++) {
@@ -185,8 +184,8 @@ $(function() {
         if (!msg.id || msg.id === '') return;
         console.log('---', msg);
         if (!gameStarted) return;
-        balls[msg.id].position.x += x / 10;
-        balls[msg.id].position.z += y / 10;
+        balls[msg.id].position.x += -(Math.abs(Math.abs(x)-10)) / 15;
+        balls[msg.id].position.z += (-y) / 10;
     });
 
     socket.on('initClientMessage', function(msg) {
