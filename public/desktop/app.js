@@ -185,7 +185,7 @@ $(function() {
         if (!msg.id || msg.id === '') return;
         console.log('---', msg);
         if (!gameStarted) return;
-        balls[msg.id].position.x += -(Math.abs(x-10)) / 20;
+        balls[msg.id].position.x += -(Math.abs(Math.abs(x)-10)) / 15;
         balls[msg.id].position.z += (-y) / 10;
     });
 
