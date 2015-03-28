@@ -1,4 +1,4 @@
-var socket = io.connect('10.168.1.36:3010');
+var socket = io.connect('10.168.0.115:3010');
 
 var balls = [];
 var readyPlayerCount = 0;
@@ -10,10 +10,10 @@ var R = 4;
 
 $(function() {
 
-    var addPlane = function(scene, w, h, t, x, y, z) {
+    var addPlane = function(scene, w, h, t, x, y, z, col) {
         var planeGeometry = new THREE.CubeGeometry(w, h, t, 10);
         var planeMaterial = new THREE.MeshLambertMaterial({
-            color: 0xffffff
+            color: col || 0xffffff
         });
         var plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.receiveShadow = true;
@@ -57,8 +57,8 @@ $(function() {
         var ambientLight = new THREE.AmbientLight(0x0c0c0c);
         scene.add(ambientLight);
         // add spotlight for the shadows
-        var spotLight = new THREE.SpotLight(0xffffff);
-        spotLight.position.set(-40, 60, -10);
+        var spotLight = new THREE.SpotLight(0xffffff, 2);
+        spotLight.position.set(-40, 10000, -10);
         spotLight.castShadow = true;
         scene.add(spotLight);
         // add the output of the renderer to the html element
@@ -77,10 +77,10 @@ $(function() {
         var longestX = getFirstPlayerPosition();
 
         //handleCollisions();
-        //handleCrossingTheLine();
+        handleCrossingTheLine();
         updateCameraPosition(camera, longestX + 40);
 
-        if(framesCount++ >= 30) {
+        if(framesCount++ >= 15) {
             framesCount = 0;
             generateTiles();
         }
@@ -93,7 +93,7 @@ $(function() {
 
         for(var key in balls){
             if(balls.hasOwnProperty(key)){
-                if(balls[key].position.x < longestX)
+                if(balls[key].position.x < longestX && balls[key].position.y >= 0)
                     longestX = balls[key].position.x;
             }
         }
@@ -130,8 +130,13 @@ $(function() {
     function handleCrossingTheLine() {
         for(var key in balls){
             if(balls.hasOwnProperty(key)) {
-                if(balls[key].position.z < -25 || balls[key].position.z > 25) {
-                    //delete balls[key];
+                if(balls[key].position.z < -20 ) {
+                    balls[key].position.y -= 0.8;
+                    balls[key].position.z -= 0.4;
+                }
+                else if(balls[key].position.z > 20) {
+                    balls[key].position.y -= 0.8;
+                    balls[key].position.z += 0.4;
                 }
             }
         }
@@ -148,10 +153,14 @@ $(function() {
         count = count || 1;
 
         for(var i = 0; i < count; i++, rowCount++) {
-            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 5, 0x9b59b6);
-            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 15, 0xe67e22);
-            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -5, 0xe74c3c);
-            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -15, 0x2ecc71);
+            var clr = 0xe74c3c;
+            if(rowCount % 2 === 0)
+                clr = 0xe67e22;
+
+            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 5, clr);
+            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 15, clr);
+            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -5, clr);
+            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -15, clr);
         }
     }
 
@@ -176,8 +185,8 @@ $(function() {
         if (!msg.id || msg.id === '') return;
         console.log('---', msg);
         if (!gameStarted) return;
-        balls[msg.id].position.x += x / 100;
-        balls[msg.id].position.z += y / 100;
+        balls[msg.id].position.x += x / 10;
+        balls[msg.id].position.z += y / 10;
     });
 
     socket.on('initClientMessage', function(msg) {
