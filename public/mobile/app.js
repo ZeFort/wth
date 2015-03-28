@@ -43,7 +43,8 @@ socket.on('playerWin', function(msg) {
 $(function() {
     username = '';
 
-    $('.ready-btn').click(function() {
+    $('.ready-btn').click(function(e) {
+        e.preventDefault();
         socket.emit('readyToPlay', {
             id: id,
             username: username
@@ -51,7 +52,8 @@ $(function() {
         $('.button').addClass('disabled');
     });
 
-    $('.accept').click(function() {
+    $('.accept').click(function(e) {
+        e.preventDefault();
         username = $('#username').val();
         if (!username || /^\s*$/.test(username)) {
             $('#username').addClass('wrong');
@@ -61,73 +63,82 @@ $(function() {
             alert('Sockets is not connected.');
             return;
         }
-        $('.login').remove();
-        if (!localStorage[username]) {
-            console.log('New user');
-            id = '' + Math.floor(Math.random() * 254);
-            color = Math.floor(Math.random() * 0xffffff);
-            localStorage[username] = JSON.stringify({
-                id: id,
-                color: color
-            });
-        } else {
-            console.log('Use existing user');
-            id = JSON.parse(localStorage[username]).id;
-            color = JSON.parse(localStorage[username]).color;
-        }
-        console.log(id);
-        $(".color").css({
-            "background": "#" + color.toString(16)
-        });
-
-        socket.emit('updateMessage', {
-            id: id,
-            x: 1,
-            y: 0,
-            z: 1,
-            color: color,
-            username: username
-        });
-        window.addEventListener("devicemotion", handleMotionEvent, true);
-
-        function handleMotionEvent(event) {
-            var x = event.accelerationIncludingGravity.x;
-            var y = event.accelerationIncludingGravity.y;
-            var z = (event.accelerationIncludingGravity.z);
-            if (Math.abs(x) > 10) x = 10 * Math.sign(x);
-            if (Math.abs(y) > 5) y = 5 * Math.sign(y);
-            //if (Math.abs(z) > 5) z = 5 * Math.sign(z);
-            if (x) $('.x').html('x: ' + x.toFixed(0));
-            if (y) $('.y').html('y: ' + y.toFixed(0));
-            if (z) $('.z').html('z: ' + z.toFixed(0));
-            if (id != "")
-                sendXYZ(x, y, z);
-            else {
+        socket.on('usernameList', function(msg) {
+            console.log(msg);
+            if (msg.list.indexOf(username) > -1) {
+                $('#username').addClass('wrong');
+                return;
+            }
+            $('.login').remove();
+            if (!localStorage[username]) {
+                console.log('New user');
+                id = '' + Math.floor(Math.random() * 254);
                 color = Math.floor(Math.random() * 0xffffff);
-                balls[id] = addSphere(scene, 1, 0, 1, 0, color);
-                socket.emit('updateMessage', {
+                localStorage[username] = JSON.stringify({
                     id: id,
-                    x: 1,
-                    y: 0,
-                    z: 1,
+                    color: color
+                });
+            } else {
+                console.log('Use existing user');
+                id = JSON.parse(localStorage[username]).id;
+                color = JSON.parse(localStorage[username]).color;
+            }
+            console.log(id);
+            $(".color").css({
+                "background": "#" + color.toString(16)
+            });
+
+            socket.emit('updateMessage', {
+                id: id,
+                x: 1,
+                y: 0,
+                z: 1,
+                color: color,
+                username: username
+            });
+
+            window.addEventListener("devicemotion", handleMotionEvent, true);
+
+            function handleMotionEvent(event) {
+                var x = event.accelerationIncludingGravity.x;
+                var y = event.accelerationIncludingGravity.y;
+                var z = (event.accelerationIncludingGravity.z);
+                if (Math.abs(x) > 10) x = 10 * Math.sign(x);
+                if (Math.abs(y) > 5) y = 5 * Math.sign(y);
+                //if (Math.abs(z) > 5) z = 5 * Math.sign(z);
+                if (x) $('.x').html('x: ' + x.toFixed(0));
+                if (y) $('.y').html('y: ' + y.toFixed(0));
+                if (z) $('.z').html('z: ' + z.toFixed(0));
+                if (id != "")
+                    sendXYZ(x, y, z);
+                else {
+                    color = Math.floor(Math.random() * 0xffffff);
+                    socket.emit('updateMessage', {
+                        id: id,
+                        x: 1,
+                        y: 0,
+                        z: 1,
+                        color: color,
+                        username: username
+                    });
+                }
+            }
+
+
+            function sendXYZ(x, y, z) {
+                console.log(id);
+                socket.emit('updateMessage', {
+                    x: x,
+                    y: y,
+                    z: z,
+                    id: id,
                     color: color,
                     username: username
                 });
             }
-        }
 
-
-        function sendXYZ(x, y, z) {
-            console.log(id);
-            socket.emit('updateMessage', {
-                x: x,
-                y: y,
-                z: z,
-                id: id,
-                color: color,
-                username: username
-            });
-        }
+        });
+        socket.emit('usernames', {});
     });
 
     $(window).unload(function() {

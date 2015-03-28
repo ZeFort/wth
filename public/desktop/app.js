@@ -17,17 +17,30 @@ socket.on('refresh', function(msg) {
     document.location.reload();
 });
 
+socket.on('usernames', function(msg) {
+    socket.emit('usernameList', {
+        list: users
+    });
+});
+
 socket.on('disconnectUser', function(msg) {
     console.log('disconnected', msg);
     if (balls[msg.id]) {
-        readyPlayerCount++;
+        readyPlayerCount--;
+        if (readyPlayerCount < 0) readyPlayerCount = 0;
+        $('.elapsed-players').html((needToStart - readyPlayerCount) + '');
         balls[msg.id].active = false;
         balls[msg.id].ready = false;
         $('.item[user="' + msg.username + '"]').remove();
+        var i = users.indexOf(msg.username);
+        if (i > -1) {
+            delete users[i];
+        }
     }
 });
 
 var balls = [];
+var users = [];
 var readyPlayerCount = 0;
 var needToStart = 2;
 var activePlayers = needToStart;
@@ -38,7 +51,8 @@ var R = 4;
 
 $(function() {
     $('.elapsed-players').html(needToStart + '');
-    $('.refresh').click(function() {
+    $('.refresh').click(function(e) {
+        e.preventDefault();
         socket.emit('refresh', {});
         socket.disconnect();
         document.location.reload();
@@ -277,11 +291,15 @@ $(function() {
 
     socket.on('updateMessage', function(msg) {
         var that = this;
+        console.log('update', msg)
+        if (users.indexOf(msg.username) == -1 && !gameStarted) {
+            users.push(msg.username);
+            var scoreboardItem = "<div class='item disabled' user='" + msg.username + "'><div class='player'>" + msg.username + "</div><div class='score'>0pts</div></div>";
+            $('.scoreboard').append(scoreboardItem);
+        }
         if (!balls[msg.id] && !gameStarted) {
             balls[msg.id] = addSphere(scene, R, msg.x, 5, msg.z, msg.color || 0xabcdef);
             balls[msg.id].user = msg.username;
-            var scoreboardItem = "<div class='item disabled' user='" + msg.username + "'><div class='player'>" + msg.username + "</div><div class='score'>0pts</div></div>";
-            $('.scoreboard').append(scoreboardItem);
         }
         if (!msg.id || msg.id === '') return;
         if (!gameStarted) return;

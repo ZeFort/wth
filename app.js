@@ -81,6 +81,14 @@ io.on('connection', function(socket) {
         io.emit('disconnectUser', msg);
     });
 
+    socket.on('usernames', function(msg) {
+        io.emit('usernames', msg);
+    });
+
+    socket.on('usernameList', function(msg) {
+        io.emit('usernameList', msg);
+    });
+
     socket.on('gameStarted', function(msg) {
         io.emit('gameStarted', msg);
     });
