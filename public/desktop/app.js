@@ -12,8 +12,8 @@ setInterval(function() {
 
 var balls = [];
 var readyPlayerCount = 0;
-var needToStart = 2;
-var gameStarted = true;
+var needToStart = 1;
+var gameStarted = false;
 
 var scene, camera, renderer, backgroundScene, backgroundCamera;
 var R = 4;
@@ -182,9 +182,9 @@ $(function() {
     function generateTiles(count) {
         count = count || 1;
         for (var i = 0; i < count; i++, rowCount++) {
-            var clr = 0xe74c3c;
+            var clr = 0x34495e;
             if (rowCount % 2 === 0)
-                clr = 0xe67e22;
+                clr = 0x2c3e50;
 
             addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 5, clr);
             addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 15, clr);
@@ -206,8 +206,10 @@ $(function() {
 
     socket.on('updateMessage', function(msg) {
         var that = this;
-        if (!balls[msg.id]) {
+        if (!balls[msg.id] && !gameStarted) {
             balls[msg.id] = addSphere(scene, R, msg.x, 5, msg.z, msg.color || 0xabcdef);
+            var scoreboardItem = "<div class='item' user='" + msg.username + "'><div class='player'>" + msg.username + "</div><div class='score'>0pts</div></div>";
+            $('.scoreboard').append(scoreboardItem);
         }
         var x = msg.x;
         var y = msg.y;
@@ -223,15 +225,29 @@ $(function() {
     });
 
     socket.on('readyToPlay', function(msg) {
+        if (gameStarted) return;
         console.log(msg);
         if (balls[msg.id] && !balls[msg.id].ready) {
             balls[msg.id].ready = true;
             readyPlayerCount++;
             $('.elapsed-players').html((needToStart - readyPlayerCount) + '');
             if (readyPlayerCount === needToStart) {
-                socket.emit('gameStarted', {});
-                gameStarted = true;
                 $('.waiting').remove();
+                var time = 5;
+                $('.timer').css({
+                    display: 'block'
+                });
+                $('.timer').html('' + time + '...');
+                var interval = setInterval(function() {
+                    if (time <= 0) {
+                        clearInterval(interval);
+                        socket.emit('gameStarted', {});
+                        gameStarted = true;
+                        $('.timer').remove();
+                    }
+                    time--;
+                    $('.timer').html('' + time + '...');
+                }, 1000);
             }
         }
     });

@@ -63,7 +63,8 @@ body, html {
   top: 50%;
   left: 50%;
   -webkit-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%);
 }
 
 .elapsed-players {
@@ -87,4 +88,55 @@ body, html {
 
 .connected {
   background: #2ecc71;
+}
+
+
+.item .player, .item .score {
+  display: inline-block;
+  padding: 4px;
+  background: #ecf0f1;
+}
+
+.item {
+  background: #ecf0f1;
+}
+
+.player {
+  color: #34495e;
+}
+
+.score {
+  color: #d35400;
+  float: right;
+}
+
+.scoreboard {
+  position: fixed;
+  padding: 10px;
+  top: 0px;
+  left: 0px;
+  z-index: 100;
+  background: #ecf0f1;
+  border-radius: 0 0 10px 0;
+  box-shadow: 0 4px 2px #7f8c8d;
+  min-width: 175px;
+}
+
+
+.timer {
+  position: absolute;
+  display: none;
+  margin: auto;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  font-size: 45px;
+  color: #d35400;
+  background: #bdc3c7;
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow: 0 5px 0 #7f8c8d;
+  z-index: 15;
 }
