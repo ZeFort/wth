@@ -86,8 +86,8 @@ $(function() {
         var y = msg.y;
         if (!msg.id || msg.id === '') msg.id = id;
         console.log('---', msg);
-        balls[msg.id].position.x += x / 100;
-        balls[msg.id].position.z += y / 100;
+        balls[msg.id].position.x += Math.abs(x-5) / 70;
+        balls[msg.id].position.z += y / 70;
     });
 
     socket.on('initClientMessage', function(msg) {
