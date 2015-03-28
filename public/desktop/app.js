@@ -1,7 +1,9 @@
-var socket = io.connect('10.168.0.115:3010');
+var socket = io.connect('10.168.1.36:3010');
 
-var id = "";
 var balls = [];
+var readyPlayerCount = 0;
+var needToStart = 1;
+var gameStarted = false;
 
 var scene, camera, renderer;
 var R = 4;
@@ -163,6 +165,7 @@ $(function() {
         z: 1,
         color: color
     });
+
     socket.on('updateMessage', function(msg) {
         var that = this;
         if (!balls[msg.id]) {
@@ -170,13 +173,27 @@ $(function() {
         }
         var x = msg.x;
         var y = msg.y;
-        if (!msg.id || msg.id === '') msg.id = id;
+        if (!msg.id || msg.id === '') return;
         console.log('---', msg);
-        balls[msg.id].position.x += x / 20;
-        balls[msg.id].position.z += y / 20;
+        if (!gameStarted) return;
+        balls[msg.id].position.x += x / 100;
+        balls[msg.id].position.z += y / 100;
     });
 
     socket.on('initClientMessage', function(msg) {
         console.log(msg);
+    });
+
+    socket.on('readyToPlay', function(msg) {
+        console.log(msg);
+        if(balls[msg.id] && !balls[msg.id].ready) {
+            balls[msg.id].ready = true;
+            readyPlayerCount ++;
+            if (readyPlayerCount === needToStart) {
+                socket.emit('gameStarted', {});
+                gameStarted = true;
+                $('.waiting').remove();
+            }
+        }
     });
 });
