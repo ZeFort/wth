@@ -18,7 +18,7 @@ var gameStarted = false;
 var countSphere = 0;
 
 var scene, camera, renderer, backgroundScene, backgroundCamera;
-var R = 3;
+var R = 2;
 
 $(function() {
     $('.elapsed-players').html(needToStart + '');
@@ -148,7 +148,25 @@ $(function() {
         return longestX;
     }
 
-
+    function handleInvisiblePlayers() {
+        var longest = getFirstPlayerPosition() + 30 + R;
+        for (var key in balls) {
+            if (balls.hasOwnProperty(key)) {
+                if (balls[key].position.x > longest) {
+                    if (balls[key].active) {
+                        activePlayers--;
+                        $('.item[user="' + balls[key].user + '"]').addClass('disabled');
+                        var message = (activePlayers > 0) ? 'playerLose' : 'playerWin';
+                        socket.emit(message, {
+                            user: balls[key].user,
+                            score: Math.abs(balls[key].position.x - 1).toFixed(0)
+                        });
+                    }
+                    balls[key].active = false;
+                }
+            }
+        }
+    }
 
     function handleCrossingTheLine() {
         for (var key in balls) {
@@ -156,7 +174,7 @@ $(function() {
                 if (balls[key].active) {
                     $('.item[user="' + balls[key].user + '"] .score').html(Math.abs(balls[key].position.x - 1).toFixed(0) + ' pts');
                 }
-                if (balls[key].position.z < -20) {
+                if (balls[key].position.z < -30) {
                     if (balls[key].active) {
                         activePlayers--;
                         $('.item[user="' + balls[key].user + '"]').addClass('disabled');
@@ -169,7 +187,7 @@ $(function() {
                     balls[key].active = false;
                     balls[key].position.y -= 0.8;
                     balls[key].position.z -= 0.4;
-                } else if (balls[key].position.z > 20) {
+                } else if (balls[key].position.z > 30) {
                     if (balls[key].active) {
                         balls[key].active = false;
                         activePlayers--;
@@ -206,6 +224,8 @@ $(function() {
             addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 15, clr);
             addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -5, clr);
             addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -15, clr);
+            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 25, clr);
+            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -25, clr);
         }
     }
 
