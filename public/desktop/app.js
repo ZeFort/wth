@@ -14,9 +14,10 @@ var balls = [];
 var readyPlayerCount = 0;
 var needToStart = 2;
 var gameStarted = false;
+var countSphere = 0;
 
 var scene, camera, renderer;
-var R = 4;
+var R = 3;
 
 $(function() {
     $('.elapsed-players').html(needToStart + '');
@@ -57,7 +58,7 @@ $(function() {
         renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMapEnabled = true;
-
+        renderer.setClearColor( 0xffffff, 1);
         generateTiles(12);
 
         // position and point the camera to the center of the scene
@@ -149,59 +150,65 @@ $(function() {
         }
     }
 
-    id = "" + Math.floor(Math.random() * 254);
-    color = Math.floor(Math.random() * 0xffffff);
-    balls[id] = addSphere(scene, R, 0, 5, 0, color);
-    socket.emit('updateMessage', {
-        id: id,
-        x: 1,
-        y: 0,
-        z: 1,
-        color: color
-    });
-
     socket.on('updateMessage', function(msg) {
         var that = this;
         if (!balls[msg.id]) {
-            balls[msg.id] = addSphere(scene, R, msg.x, 5, msg.z, msg.color || 0xabcdef);
+            console.log(countSphere);
+            balls[msg.id] = addSphere(scene, R, msg.x, 5, 10 * countSphere , msg.color || 0xabcdef);
+            balls[msg.id].vector = {x: 0, y: 0};
+            countSphere++;
         }
-        var x = msg.x;
-        var y = msg.y;
-        if (!msg.id || msg.id === '') return;
-        console.log('---', msg);
+
         if (!gameStarted) return;
-        handleCollisions(msg.id, x, y);
+        console.log(balls[msg.id].vector.x, balls[msg.id].vector.y);
+        balls[msg.id].vector.x += msg.x/20;
+        if (balls[msg.id].vector.x > 10){
+            balls[msg.id].vector.x = 10;
+        }
+        if (balls[msg.id].vector.x < 0){
+            balls[msg.id].vector.x = 0;
+        }
+
+        balls[msg.id].vector.y += msg.y/5;
+        balls[msg.id].vector.y = Math.min(10, Math.abs(balls[msg.id].vector.y)) * Math.sign(balls[msg.id].vector.y);
+
+        if (!msg.id || msg.id === '') return;
+        handleCollisions(msg.id);
     });
 
-    function handleCollisions(id, x, y){
+    function handleCollisions(id){
         for(var key in balls){
             if(balls.hasOwnProperty(key) && (id !== key)){
                 var sphere1 = balls[id],
                     sphere2 = balls[key];
                 if (getPythogarExpression(sphere1.position.x, sphere2.position.x, sphere1.position.z, sphere2.position.z)){
-                    if (sphere1.position.z > sphere2.position.z && y > 0 || sphere1.position.z < sphere2.position.z && y < 0 ){
-                        balls[id].position.x += -(Math.abs(Math.abs(x)-10)) / 15;
-                        balls[id].position.z += 0;
-                    }else{
-                        balls[id].position.x += -(Math.abs(Math.abs(x)-10)) / 15;
-                        balls[id].position.z += (-y) / 10;
-                    }
+                    changeVectors(sphere1, sphere2);
+                    sphere1.position.x += -sphere1.vector.x/20;
+                    sphere1.position.z += -sphere1.vector.y/20;
                 }
                 else {
-                    balls[id].position.x += -(Math.abs(Math.abs(x)-10)) / 15;
-                    balls[id].position.z += (-y) / 10;
+                    sphere1.position.x += -sphere1.vector.x/20;
+                    sphere1.position.z += -sphere1.vector.y/20;
                 }
+                //console.log(sphere1.position.x, sphere1.position.z);
 
             }
         }
     }
 
-    function getPythogarExpression(x1, x2, y1, y2) {
-        return Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2) <= 4 * R * R;
+    function changeVectors(sphere1, sphere2){
+        var v1x = sphere1.vector.x,
+            v1y = sphere1.vector.y,
+            v2x = sphere2.vector.x,
+            v2y = sphere2.vector.y;
+        sphere1.vector.x = v2x;
+        sphere1.vector.y = v2y;
+        sphere2.vector.x = v1x;
+        sphere2.vector.y = v1y;
     }
 
-    function swapSpeeds(sph1, sph2) {
-        //write swap speeds logic here
+    function getPythogarExpression(x1, x2, y1, y2) {
+        return Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2) <= 4 * R * R;
     }
 
     socket.on('initClientMessage', function(msg) {
