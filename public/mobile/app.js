@@ -4,9 +4,11 @@ setInterval(function() {
     var status = socket.connected;
     if (status) {
         $('.status').addClass('connected');
+        $('.status').removeClass('pending');
         $('.status').removeClass('disconnected');
     } else {
         $('.status').removeClass('connected');
+        $('.status').removeClass('pending');
         $('.status').addClass('disconnected');
     }
 }, 1000);
@@ -43,7 +45,8 @@ $(function() {
 
     $('.ready-btn').click(function() {
         socket.emit('readyToPlay', {
-            id: id
+            id: id,
+            username: username
         });
         $('.button').addClass('disabled');
     });

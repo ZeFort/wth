@@ -90,6 +90,9 @@ body, html {
   background: #2ecc71;
 }
 
+.pending {
+  background: #f39c12;
+}
 
 .item .player, .item .score {
   display: inline-block;

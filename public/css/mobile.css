@@ -182,6 +182,10 @@
   background: #2ecc71;
 }
 
+.pending {
+  background: #f39c12;
+}
+
 
 .result-board {
   display: none;
