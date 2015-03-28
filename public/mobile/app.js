@@ -35,7 +35,16 @@ $(function() {
     function handleMotionEvent(event) {
         var x = event.accelerationIncludingGravity.x;
         var y = event.accelerationIncludingGravity.y;
-        var z = event.accelerationIncludingGravity.z;
+        var z = (event.accelerationIncludingGravity.z);
+        if (Math.abs(x) > 5) x = 5 * Math.sign(x);
+        if (Math.abs(y) > 5) y = 5 * Math.sign(y);
+        //if (Math.abs(z) > 5) z = 5 * Math.sign(z);
+        $('.rotation').empty();
+        $('.rotation').append(JSON.stringify({
+            x: x,
+            y: y,
+            z: z
+        }));
         if (id != "")
             sendXYZ(x, y, z);
         else {
