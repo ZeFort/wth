@@ -22,6 +22,17 @@ var color = '';
 var balls = [];
 var username = '';
 
+socket.on('playerLose', function(msg) {
+    if (msg.user == username)
+        showResultBoard('You lose :(', 'Score: ' + msg.score + ' pts');
+});
+
+socket.on('playerWin', function(msg) {
+    if (msg.user == username)
+        showResultBoard('You wins', 'Score: ' + msg.score + ' pts');
+});
+
+
 $(function() {
     username = '';
 
@@ -36,6 +47,10 @@ $(function() {
         username = $('#username').val();
         if (!username || /^\s*$/.test(username)) {
             $('#username').addClass('wrong');
+            return;
+        }
+        if (!socket.connected) {
+            alert('Sockets is not connected.');
             return;
         }
         $('.login').remove();
@@ -53,6 +68,9 @@ $(function() {
             color = JSON.parse(localStorage[username]).color;
         }
         console.log(id);
+        $(".color").css({
+            "background": "#" + color.toString(16)
+        });
 
         socket.emit('updateMessage', {
             id: id,
@@ -71,9 +89,9 @@ $(function() {
             if (Math.abs(x) > 10) x = 10 * Math.sign(x);
             if (Math.abs(y) > 5) y = 5 * Math.sign(y);
             //if (Math.abs(z) > 5) z = 5 * Math.sign(z);
-            if (x) $('.x').html(x.toFixed(0));
-            if (y) $('.y').html(y.toFixed(0));
-            if (z) $('.z').html(z.toFixed(0));
+            if (x) $('.x').html('x: ' + x.toFixed(0));
+            if (y) $('.y').html('y: ' + y.toFixed(0));
+            if (z) $('.z').html('z: ' + z.toFixed(0));
             if (id != "")
                 sendXYZ(x, y, z);
             else {
@@ -103,9 +121,12 @@ $(function() {
             });
         }
     });
-
-
-    $(".color-mobile").css({
-        "background": "#" + color.toString(16)
-    });
 });
+
+function showResultBoard(user, score) {
+    $('.winner-name').html(user);
+    $('.winner-score').html(score);
+    $('.result-board').css({
+        display: 'block'
+    });
+}

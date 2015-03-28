@@ -48,7 +48,8 @@
   top: 50%;
   left: 50%;
   -webkit-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%);
 }
 
 .wrong {
@@ -70,7 +71,8 @@
   width: 100px;
   border: 1px solid #2ecc71;
   -webkit-transform: rotate(90deg);
-  transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+      transform: rotate(90deg);
 }
 
 .oz {
@@ -78,27 +80,36 @@
   width: 100px;
   border: 1px solid #2980b9;
   -webkit-transform: rotate(90deg);
-  transform: rotate(65deg);
+  -ms-transform: rotate(65deg);
+      transform: rotate(65deg);
 }
 
 .x,.y,.z {
   position: absolute;
   font-size: 14px;
   background: rgba(0,0,0,0);
-  transform: none;
+  -webkit-transform: none;
+      -ms-transform: none;
+          transform: none;
 }
 
 .x {
   left: -7px;
-  transform: rotate(205deg);
+  -webkit-transform: rotate(205deg);
+      -ms-transform: rotate(205deg);
+          transform: rotate(205deg);
 }
 .y {
   left: 20px;
   top: 47px;
-  transform: rotate(205deg);
+  -webkit-transform: rotate(205deg);
+      -ms-transform: rotate(205deg);
+          transform: rotate(205deg);
 }
 .z {
-  transform: rotate(205deg);
+  -webkit-transform: rotate(205deg);
+      -ms-transform: rotate(205deg);
+          transform: rotate(205deg);
   top: 21px;
   left: 100px;
   float:right;
@@ -118,11 +129,13 @@
 }
 
 .button {
-  transform: rotate(205deg);
+  -webkit-transform: rotate(205deg);
+      -ms-transform: rotate(205deg);
+          transform: rotate(205deg);
   font-size : 18px;
   padding: 4px;
   position: absolute;
-  width: 80px;
+  width: 100px;
   top: -108px;
   left: 40px;
   background: #e67e22;
@@ -145,7 +158,8 @@
   margin: auto;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%);
   -webkit-transform: translate(-50%, -50%);
 }
 
@@ -166,4 +180,33 @@
 
 .connected {
   background: #2ecc71;
+}
+
+
+.result-board {
+  display: none;
+  position: absolute;
+  margin: auto;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: rotate(-90deg) translate(0, -100%);
+      -ms-transform: rotate(-90deg) translate(0, -100%);
+          transform: rotate(-90deg) translate(0, -100%);
+  font-size: 45px;
+  color: #d35400;
+  background: #bdc3c7;
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow: 0 5px 0 #7f8c8d;
+  width: 250px;
+  z-index: 15;
+}
+
+.winner-name, .winner-score {
+  background: #bdc3c7;
+  color: #2c3e50;
+}
+
+.winner-score {
+  color: #c0392b;
 }

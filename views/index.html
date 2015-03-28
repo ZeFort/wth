@@ -10,13 +10,31 @@
 <body>
     <div class='container'>
       <div class='logo'>
-        <img src='http://www.myiconfinder.com/uploads/iconsets/256-256-5e2a8fe966bf6f56fc29234d1e5817b8.png' width='100px'/>
+        <img src='pad.png' width='100px'/>
       </div>
       <div class='title'>XYZ_Pad</div>
     </div>
+    <div class='status disconnected'></div>
+    <script src="/libs/socket.io-client/socket.io.js"></script>
+    <script src="/libs/jquery/dist/jquery.min.js"></script>
     <script>
-        setTimeout(function(){
-            document.location.href = '/start';
-        }, 2500);
+        var socket = io.connect(window.ip + ':3010');
+        var redirect = false;
+        setInterval(function() {
+            var status = socket.connected;
+            if (status) {
+                $('.status').addClass('connected');
+                $('.status').removeClass('disconnected');
+                if (!redirect) {
+                    redirect = true;
+                    setTimeout(function(){
+                        document.location.href = '/start';
+                    }, 2500);
+                }
+            } else {
+                $('.status').removeClass('connected');
+                $('.status').addClass('disconnected');
+            }
+        }, 1000);
     </script>
 </html>

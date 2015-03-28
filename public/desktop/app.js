@@ -13,10 +13,11 @@ setInterval(function() {
 var balls = [];
 var readyPlayerCount = 0;
 var needToStart = 2;
+var activePlayers = needToStart;
 var gameStarted = false;
 var countSphere = 0;
 
-var scene, camera, renderer;
+var scene, camera, renderer, backgroundScene, backgroundCamera;
 var R = 3;
 
 $(function() {
@@ -76,6 +77,25 @@ $(function() {
         $("body").append(renderer.domElement);
     }
 
+    function initBg() {
+        var texture = THREE.ImageUtils.loadTexture('../bg.jpg');
+        var backgroundMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(2, 2, 0),
+            new THREE.MeshBasicMaterial({
+                map: texture
+            }));
+
+        backgroundMesh.material.depthTest = false;
+        backgroundMesh.material.depthWrite = false;
+
+        // Create your background scene
+        backgroundScene = new THREE.Scene();
+        backgroundCamera = new THREE.Camera();
+        backgroundScene.add(backgroundCamera);
+        backgroundScene.add(backgroundMesh);
+
+    }
+
     function animate() {
         // render using requestAnimationFrame
         //x.position.x += 0.1;
@@ -90,21 +110,37 @@ $(function() {
 
 
         handleCrossingTheLine();
+        handleInvisiblePlayers();
         updateCameraPosition(camera, longestX + 40);
 
-        if(framesCount++ >= 15) {
+        if (framesCount++ >= 15) {
             framesCount = 0;
             generateTiles();
         }
 
         renderer.render(scene, camera);
+
+
+        if (activePlayers <= 1) {
+            gameStarted = false;
+
+            for (var key in balls) {
+                if (balls.hasOwnProperty(key) && balls[key].active) {
+                    showResultBoard(balls[key].user + ' wins!', 'Score: ' + Math.abs(balls[key].position.x - 1).toFixed(0) + ' pts');
+                    socket.emit('playerWin', {
+                        user: balls[key].user,
+                        score: Math.abs(balls[key].position.x - 1).toFixed(0)
+                    });
+                }
+            }
+        }
     }
 
-    function getFirstPlayerPosition(){
+    function getFirstPlayerPosition() {
         var longestX = 0; //we are moving to -inf by X axis
-        for(var key in balls){
-            if(balls.hasOwnProperty(key)){
-                if(balls[key].position.x < longestX && balls[key].position.y >= 0)
+        for (var key in balls) {
+            if (balls.hasOwnProperty(key)) {
+                if (balls[key].position.x < longestX && balls[key].position.y >= 0)
                     longestX = balls[key].position.x;
             }
         }
@@ -115,13 +151,35 @@ $(function() {
 
 
     function handleCrossingTheLine() {
-        for(var key in balls){
-            if(balls.hasOwnProperty(key)) {
-                if(balls[key].position.z < -20 ) {
+        for (var key in balls) {
+            if (balls.hasOwnProperty(key)) {
+                if (balls[key].active) {
+                    $('.item[user="' + balls[key].user + '"] .score').html(Math.abs(balls[key].position.x - 1).toFixed(0) + ' pts');
+                }
+                if (balls[key].position.z < -20) {
+                    if (balls[key].active) {
+                        activePlayers--;
+                        $('.item[user="' + balls[key].user + '"]').addClass('disabled');
+                        var message = (activePlayers > 0) ? 'playerLose' : 'playerWin';
+                        socket.emit(message, {
+                            user: balls[key].user,
+                            score: Math.abs(balls[key].position.x - 1).toFixed(0)
+                        });
+                    }
+                    balls[key].active = false;
                     balls[key].position.y -= 0.8;
                     balls[key].position.z -= 0.4;
-                }
-                else if(balls[key].position.z > 20) {
+                } else if (balls[key].position.z > 20) {
+                    if (balls[key].active) {
+                        balls[key].active = false;
+                        activePlayers--;
+                        $('.item[user="' + balls[key].user + '"]').addClass('disabled');
+                        var message = (activePlayers > 0) ? 'playerLose' : 'playerWin';
+                        socket.emit(message, {
+                            user: balls[key].user,
+                            score: Math.abs(balls[key].position.x - 1).toFixed(0)
+                        });
+                    }
                     balls[key].position.y -= 0.8;
                     balls[key].position.z += 0.4;
                 }
@@ -136,12 +194,13 @@ $(function() {
     }
 
     var rowCount = 0;
+
     function generateTiles(count) {
         count = count || 1;
-        for(var i = 0; i < count; i++, rowCount++) {
-            var clr = 0xe74c3c;
-            if(rowCount % 2 === 0)
-                clr = 0xe67e22;
+        for (var i = 0; i < count; i++, rowCount++) {
+            var clr = 0x34495e;
+            if (rowCount % 2 === 0)
+                clr = 0x2c3e50;
 
             addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 5, clr);
             addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 15, clr);
@@ -152,14 +211,19 @@ $(function() {
 
     socket.on('updateMessage', function(msg) {
         var that = this;
-        if (!balls[msg.id]) {
+        if (!balls[msg.id] && !gameStarted) {
             console.log(countSphere);
             balls[msg.id] = addSphere(scene, R, msg.x, 5, 10 * countSphere , msg.color || 0xabcdef);
             balls[msg.id].vector = {x: 0, y: 0};
             countSphere++;
+            balls[msg.id].user = msg.username;
+            var scoreboardItem = "<div class='item' user='" + msg.username + "'><div class='player'>" + msg.username + "</div><div class='score'>0pts</div></div>";
+            $('.scoreboard').append(scoreboardItem);
         }
 
+        if (!msg.id || msg.id === '') return;
         if (!gameStarted) return;
+        if (!balls[msg.id].ready || !balls[msg.id].active) return;
         console.log(balls[msg.id].vector.x, balls[msg.id].vector.y);
         balls[msg.id].vector.x += msg.x/20;
         if (balls[msg.id].vector.x > 10){
@@ -216,16 +280,40 @@ $(function() {
     });
 
     socket.on('readyToPlay', function(msg) {
+        if (gameStarted) return;
         console.log(msg);
         if (balls[msg.id] && !balls[msg.id].ready) {
             balls[msg.id].ready = true;
+            balls[msg.id].active = true;
             readyPlayerCount++;
             $('.elapsed-players').html((needToStart - readyPlayerCount) + '');
             if (readyPlayerCount === needToStart) {
-                socket.emit('gameStarted', {});
-                gameStarted = true;
                 $('.waiting').remove();
+                var time = 5;
+                $('.timer').css({
+                    display: 'block'
+                });
+                $('.timer').html('' + time + '...');
+                var interval = setInterval(function() {
+                    if (time <= 0) {
+                        clearInterval(interval);
+                        socket.emit('gameStarted', {});
+                        gameStarted = true;
+                        $('.timer').remove();
+                    }
+                    time--;
+                    $('.timer').html('' + time + '...');
+                }, 1000);
             }
         }
     });
+
 });
+
+function showResultBoard(user, score) {
+    $('.winner-name').html(user);
+    $('.winner-score').html(score);
+    $('.result-board').css({
+        display: 'block'
+    });
+}

@@ -11,7 +11,8 @@
   top: 50%;
   left: 50%;
   -webkit-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%);
 }
 
 .title {
@@ -24,7 +25,27 @@
   margin: auto;
   left: 50%;
   width: 100%;
-  transform: translate(-25%, 0);
+  -ms-transform: translate(-25%, 0);
+      transform: translate(-25%, 0);
   -webkit-transform: translate(-25%, 0);
   content-align: center;
+}
+
+.status {
+  position: fixed;
+  z-index: 1000;
+  width: 10px;
+  height: 10px;
+  bottom: 10px;
+  left: 10px;
+  border-radius: 50%;
+  border: 1px solid #7f8c8d;
+}
+
+.disconnected {
+  background: #c0392b;
+}
+
+.connected {
+  background: #2ecc71;
 }
