@@ -10,6 +10,11 @@ setInterval(function() {
     }
 }, 1000);
 
+socket.on('refresh', function(msg) {
+    socket.disconnect();
+    document.location.reload();
+});
+
 var balls = [];
 var readyPlayerCount = 0;
 var needToStart = 2;
@@ -22,6 +27,11 @@ var R = 2;
 
 $(function() {
     $('.elapsed-players').html(needToStart + '');
+    $('.refresh').click(function() {
+        socket.emit('refresh', {});
+        socket.disconnect();
+        document.location.reload();
+    });
     var addPlane = function(scene, w, h, t, x, y, z, col) {
         var planeGeometry = new THREE.BoxGeometry(w, h, t, 10);
         var planeMaterial = new THREE.MeshLambertMaterial({

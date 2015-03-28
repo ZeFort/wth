@@ -15,6 +15,11 @@ socket.on('connectedUsers', function(msg) {
     var users = msg.users;
 });
 
+socket.on('refresh', function(msg) {
+    socket.disconnect();
+    document.location.reload();
+});
+
 socket.emit('connectedUsers', {});
 
 var id = '';
@@ -29,7 +34,7 @@ socket.on('playerLose', function(msg) {
 
 socket.on('playerWin', function(msg) {
     if (msg.user == username)
-        showResultBoard('You wins', 'Score: ' + msg.score + ' pts');
+        showResultBoard('You win :like:', 'Score: ' + msg.score + ' pts');
 });
 
 

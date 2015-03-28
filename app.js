@@ -80,6 +80,10 @@ io.on('connection', function(socket) {
     socket.on('gameStarted', function(msg) {
         io.emit('gameStarted', msg);
     });
+    
+    socket.on('refresh', function(msg) {
+        io.emit('refresh', msg);
+    });
 
     socket.on('readyToPlay', function(msg) {
         io.emit('readyToPlay', msg);
