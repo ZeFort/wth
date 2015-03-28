@@ -11,7 +11,7 @@ var R = 4;
 $(function() {
     $('.elapsed-players').html(needToStart + '');
     var addPlane = function(scene, w, h, t, x, y, z, col) {
-        var planeGeometry = new THREE.CubeGeometry(w, h, t, 10);
+        var planeGeometry = new THREE.BoxGeometry(w, h, t, 10);
         var planeMaterial = new THREE.MeshLambertMaterial({
             color: col || 0xffffff
         });
@@ -48,7 +48,7 @@ $(function() {
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMapEnabled = true;
 
-        generateTiles(2000);
+        generateTiles(200);
 
         // position and point the camera to the center of the scene
         updateCameraPosition(camera, 40);
@@ -102,7 +102,6 @@ $(function() {
     }
 
     function handleCollisions(){
-        console.log(balls);
         for(var key in balls){
             if(balls.hasOwnProperty(key)){
                for(var key2 in balls){
