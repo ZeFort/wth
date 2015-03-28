@@ -156,8 +156,8 @@
 .coords {
   position: absolute;
   margin: auto;
-  top: 50%;
-  left: 50%;
+  top: calc(50% - 25px);
+  left: calc(50% - 55px);
   -ms-transform: translate(-50%, -50%);
       transform: translate(-50%, -50%);
   -webkit-transform: translate(-50%, -50%);
