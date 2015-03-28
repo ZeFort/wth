@@ -197,12 +197,6 @@ $(function() {
     function handleCrossingTheLine() {
         for (var key in balls) {
             if (balls.hasOwnProperty(key)) {
-                if (gameStarted) {
-                    if (key == '208')
-                        balls[key].position.x -= 0.3;
-                    else
-                        balls[key].position.x -= 0.01;
-                }
                 if (balls[key].active) {
                     $('.item[user="' + balls[key].user + '"] .score').html(Math.abs(balls[key].position.x - 1).toFixed(0) + ' pts');
                 }
