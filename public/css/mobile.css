@@ -189,9 +189,9 @@
   margin: auto;
   left: 50%;
   top: 50%;
-  -webkit-transform: rotate(-90deg) translate(0, -100%);
-      -ms-transform: rotate(-90deg) translate(0, -100%);
-          transform: rotate(-90deg) translate(0, -100%);
+  -webkit-transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
   font-size: 45px;
   color: #d35400;
   background: #bdc3c7;
