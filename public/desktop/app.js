@@ -1,4 +1,4 @@
-var socket = io.connect('10.168.1.36:3010');
+var socket = io.connect(window.ip + ':3010');
 
 var balls = [];
 var readyPlayerCount = 0;

@@ -4,6 +4,8 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
+var ip = require('./ip.js')[0] || '127.0.0.1';
+var html = require('./html.js');
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(device.capture());
@@ -11,24 +13,34 @@ device.enableDeviceHelpers(app);
 
 var connectedUsers = [];
 
-http.listen(3010, '10.168.1.36');
-    
+http.listen(3010, ip);
+
 app.get('/start', function(req, res) {
     if (!res.locals.is_desktop) res.redirect('/mobile');
     else res.redirect('/desktop');
 });
 
 app.get('/mobile', function(req, res) {
-    res.sendFile(__dirname + '/views/mobile.html');
+    html.send(req, res, __dirname + '/views/mobile.html', {
+        ip: ip
+    });
 });
 
 app.get('/', function(req, res) {
-    res.sendFile(__dirname + '/views/index.html');
+    html.send(req, res, __dirname + '/views/index.html', {
+        ip: ip
+    });
 });
 
 
 app.get('/desktop', function(req, res) {
-    res.sendFile(__dirname + '/views/desktop.html');
+    if (!res.locals.is_desktop) {
+        console.log('no-no-no, its not desktop device that you are using');
+        res.redirect('/mobile');
+    }
+    html.send(req, res, __dirname + '/views/desktop.html', {
+        ip: ip
+    });
 });
 
 io.on('connection', function(socket) {
@@ -52,7 +64,7 @@ io.on('connection', function(socket) {
     socket.on('updateMessage', function(msg) {
         io.emit('updateMessage', msg);
     });
-    
+
     socket.on('gameStarted', function(msg) {
         io.emit('gameStarted', msg);
     });
@@ -81,6 +93,7 @@ var server = app.listen(3000, function() {
     var host = server.address().address;
     var port = server.address().port;
 
-    console.log('Example app listening at http://%s:%s', host, port)
+    console.log('XYZ_Pad app listening at http://%s:%s', host, port)
+    console.log('Server IP:', ip);
 
 });

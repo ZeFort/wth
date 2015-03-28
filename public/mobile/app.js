@@ -1,4 +1,4 @@
-var socket = io.connect('10.168.1.36:3010');
+var socket = io.connect(window.ip + ':3010');
 
 socket.on('connectedUsers', function(msg) {
     var users = msg.users;
@@ -11,18 +11,30 @@ socket.on('connectedUsers', function(msg) {
 
 socket.emit('connectedUsers', {});
 
-var id = "";
+var id = '';
 var balls = [];
+var username = '';
 
 $(function() {
-    id = "" + Math.floor(Math.random() * 254);
+    id = '' + Math.floor(Math.random() * 254);
     color = Math.floor(Math.random() * 0xffffff);
+    username = '';
 
     $('.ready-btn').click(function() {
         socket.emit('readyToPlay', {
             id: id
         });
     });
+
+    $('.accept').click(function() {
+        username = $('#username').val();
+        if (!username || /^\s*$/.test(username)) {
+            $('#username').addClass('wrong');
+            return;
+        }
+        $('.login').remove();
+    });
+
 
     $(".color-mobile").css({
         "background": "#" + color.toString(16)
@@ -33,7 +45,8 @@ $(function() {
         x: 1,
         y: 0,
         z: 1,
-        color: color
+        color: color,
+        username: username
     });
     window.addEventListener("devicemotion", handleMotionEvent, true);
 
@@ -60,7 +73,8 @@ $(function() {
                 x: 1,
                 y: 0,
                 z: 1,
-                color: color
+                color: color,
+                username: username
             });
         }
     }
@@ -73,7 +87,8 @@ $(function() {
             y: y,
             z: z,
             id: id,
-            color: color
+            color: color,
+            username: username
         });
     }
 });

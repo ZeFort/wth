@@ -1,0 +1,56 @@
+@import url(http://fonts.googleapis.com/css?family=Nova+Flat);
+* {
+  background: #3498db;
+  font-family: 'Nova Flat', cursive;
+  color: #ecf0f1;
+  font-size: 25px;
+}
+
+.login {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+}
+
+.accept {
+  width: 80px;
+  height: 30px;
+  background: #2ecc71;
+  padding: 10px;
+  border-radius: 9px;
+  box-shadow: 0 5px 0px #27ae60;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.accept:hover, .accept:active {
+  background: #27ae60;
+  box-shadow: 0 5px 0px #16a085;
+  color: #bdc3c7;
+  padding-top: 12px;
+}
+
+.username {
+  display: inline-block;
+  height: 30px;
+  background: #bdc3c7;
+  padding: 8px;
+  border-radius: 9px;
+  box-shadow: 0 5px 0px #7f8c8d;
+  width: 200px;
+}
+
+.container {
+  width: 350px;
+  position: fixed;
+  margin: auto;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.wrong {
+  border: 3px solid #c0392b;
+}
