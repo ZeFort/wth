@@ -26,6 +26,11 @@ app.get('/mobile', function(req, res) {
     res.sendFile(__dirname + '/views/mobile.html');
 });
 
+app.get('/', function(req, res) {
+    res.sendFile(__dirname + '/views/index.html');
+});
+
+
 app.get('/desktop', function(req, res) {
     res.sendFile(__dirname + '/views/desktop.html');
 });

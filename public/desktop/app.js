@@ -2,14 +2,14 @@ var socket = io.connect('10.168.1.29:3010');
 
 var balls = [];
 var readyPlayerCount = 0;
-var needToStart = 1;
+var needToStart = 2;
 var gameStarted = false;
 
 var scene, camera, renderer;
 var R = 4;
 
 $(function() {
-
+    $('.elapsed-players').html(needToStart + '');
     var addPlane = function(scene, w, h, t, x, y, z, col) {
         var planeGeometry = new THREE.CubeGeometry(w, h, t, 10);
         var planeMaterial = new THREE.MeshLambertMaterial({
@@ -41,7 +41,7 @@ $(function() {
     init();
     animate();
 
-    function init(){
+    function init() {
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         renderer = new THREE.WebGLRenderer();
@@ -73,6 +73,7 @@ $(function() {
     }
 
     var framesCount = 0;
+
     function render() {
         var longestX = getFirstPlayerPosition();
 
@@ -90,7 +91,6 @@ $(function() {
 
     function getFirstPlayerPosition(){
         var longestX = 0; //we are moving to -inf by X axis
-
         for(var key in balls){
             if(balls.hasOwnProperty(key)){
                 if(balls[key].position.x < longestX && balls[key].position.y >= 0)
@@ -149,9 +149,9 @@ $(function() {
     }
 
     var rowCount = 0;
-    function generateTiles(count){
-        count = count || 1;
 
+    function generateTiles(count) {
+        count = count || 1;
         for(var i = 0; i < count; i++, rowCount++) {
             var clr = 0xe74c3c;
             if(rowCount % 2 === 0)
@@ -195,9 +195,10 @@ $(function() {
 
     socket.on('readyToPlay', function(msg) {
         console.log(msg);
-        if(balls[msg.id] && !balls[msg.id].ready) {
+        if (balls[msg.id] && !balls[msg.id].ready) {
             balls[msg.id].ready = true;
-            readyPlayerCount ++;
+            readyPlayerCount++;
+            $('.elapsed-players').html((needToStart - readyPlayerCount) + '');
             if (readyPlayerCount === needToStart) {
                 socket.emit('gameStarted', {});
                 gameStarted = true;

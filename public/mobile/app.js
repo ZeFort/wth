@@ -14,7 +14,6 @@ socket.emit('connectedUsers', {});
 var id = "";
 var balls = [];
 
-
 $(function() {
     id = "" + Math.floor(Math.random() * 254);
     color = Math.floor(Math.random() * 0xffffff);
@@ -24,7 +23,7 @@ $(function() {
             id: id
         });
     });
-    
+
     $(".color-mobile").css({
         "background": "#" + color.toString(16)
     });
