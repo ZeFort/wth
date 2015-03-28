@@ -13,9 +13,9 @@ setInterval(function() {
 var balls = [];
 var readyPlayerCount = 0;
 var needToStart = 2;
-var gameStarted = false;
+var gameStarted = true;
 
-var scene, camera, renderer;
+var scene, camera, renderer, backgroundScene, backgroundCamera;
 var R = 4;
 
 $(function() {
@@ -49,6 +49,7 @@ $(function() {
     }
 
     init();
+    //initBg();
     animate();
 
     function init() {
@@ -75,6 +76,25 @@ $(function() {
         $("body").append(renderer.domElement);
     }
 
+    function initBg() {
+        var texture = THREE.ImageUtils.loadTexture('../bg.jpg');
+        var backgroundMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(2, 2, 0),
+            new THREE.MeshBasicMaterial({
+                map: texture
+            }));
+
+        backgroundMesh.material.depthTest = false;
+        backgroundMesh.material.depthWrite = false;
+
+        // Create your background scene
+        backgroundScene = new THREE.Scene();
+        backgroundCamera = new THREE.Camera();
+        backgroundScene.add(backgroundCamera);
+        backgroundScene.add(backgroundMesh);
+
+    }
+
     function animate() {
         // render using requestAnimationFrame
         //x.position.x += 0.1;
@@ -91,19 +111,20 @@ $(function() {
         handleCrossingTheLine();
         updateCameraPosition(camera, longestX + 40);
 
-        if(framesCount++ >= 15) {
+        if (framesCount++ >= 15) {
             framesCount = 0;
             generateTiles();
         }
 
+        //renderer.render(backgroundScene , backgroundCamera );
         renderer.render(scene, camera);
     }
 
-    function getFirstPlayerPosition(){
+    function getFirstPlayerPosition() {
         var longestX = 0; //we are moving to -inf by X axis
-        for(var key in balls){
-            if(balls.hasOwnProperty(key)){
-                if(balls[key].position.x < longestX && balls[key].position.y >= 0)
+        for (var key in balls) {
+            if (balls.hasOwnProperty(key)) {
+                if (balls[key].position.x < longestX && balls[key].position.y >= 0)
                     longestX = balls[key].position.x;
             }
         }
@@ -111,20 +132,20 @@ $(function() {
         return longestX;
     }
 
-    function handleCollisions(){
-        for(var key in balls){
-            if(balls.hasOwnProperty(key)){
-               for(var key2 in balls){
-                    if(balls.hasOwnProperty(key2) && key !== key2){
+    function handleCollisions() {
+        for (var key in balls) {
+            if (balls.hasOwnProperty(key)) {
+                for (var key2 in balls) {
+                    if (balls.hasOwnProperty(key2) && key !== key2) {
                         var s1 = balls[key];
                         var s2 = balls[key2];
 
-                        if(getPythogarExpression(s1.position.x, s2.position.x, s1.position.z, s2.position.z)){
+                        if (getPythogarExpression(s1.position.x, s2.position.x, s1.position.z, s2.position.z)) {
                             swapSpeeds(s1, s2);
                         }
                     }
-               }
-            } 
+                }
+            }
         }
     }
 
@@ -137,13 +158,12 @@ $(function() {
     }
 
     function handleCrossingTheLine() {
-        for(var key in balls){
-            if(balls.hasOwnProperty(key)) {
-                if(balls[key].position.z < -20 ) {
+        for (var key in balls) {
+            if (balls.hasOwnProperty(key)) {
+                if (balls[key].position.z < -20) {
                     balls[key].position.y -= 0.8;
                     balls[key].position.z -= 0.4;
-                }
-                else if(balls[key].position.z > 20) {
+                } else if (balls[key].position.z > 20) {
                     balls[key].position.y -= 0.8;
                     balls[key].position.z += 0.4;
                 }
@@ -158,11 +178,12 @@ $(function() {
     }
 
     var rowCount = 0;
+
     function generateTiles(count) {
         count = count || 1;
-        for(var i = 0; i < count; i++, rowCount++) {
+        for (var i = 0; i < count; i++, rowCount++) {
             var clr = 0xe74c3c;
-            if(rowCount % 2 === 0)
+            if (rowCount % 2 === 0)
                 clr = 0xe67e22;
 
             addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 5, clr);
@@ -193,7 +214,7 @@ $(function() {
         if (!msg.id || msg.id === '') return;
         console.log('---', msg);
         if (!gameStarted) return;
-        balls[msg.id].position.x += -(Math.abs(Math.abs(x)-10)) / 15;
+        balls[msg.id].position.x += -(Math.abs(Math.abs(x) - 10)) / 15;
         balls[msg.id].position.z += (-y) / 10;
     });
 
