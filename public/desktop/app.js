@@ -105,7 +105,6 @@ $(function() {
         renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMapEnabled = true;
-        renderer.setClearColor( 0xffffff, 1);
         generateTiles(12);
         console.log(barricades);
 
@@ -120,6 +119,25 @@ $(function() {
         spotLight.position.set(-40, 10000, -10);
         spotLight.castShadow = true;
         scene.add(spotLight);
+
+        // Load the background texture
+        var texture = THREE.ImageUtils.loadTexture( '../bg.jpg' );
+        var backgroundMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(2, 2, 0),
+            new THREE.MeshBasicMaterial({
+                map: texture
+            }));
+
+        backgroundMesh .material.depthTest = false;
+        backgroundMesh .material.depthWrite = false;
+
+        // Create your background scene
+        backgroundScene = new THREE.Scene();
+        backgroundCamera = new THREE.Camera();
+        backgroundScene .add(backgroundCamera );
+        backgroundScene .add(backgroundMesh );
+        renderer.render(backgroundScene, backgroundCamera);
+
         // add the output of the renderer to the html element
         $("body").append(renderer.domElement);
     }
@@ -165,7 +183,7 @@ $(function() {
             generateTiles();
         }
 
-        renderer.render(scene, camera);
+
 
         if (activePlayers <= 1) {
             gameStarted = false;
@@ -180,6 +198,9 @@ $(function() {
                 }
             }
         }
+
+        renderer.render(scene, camera);
+        renderer.render(backgroundScene, backgroundCamera);
     }
 
     function getFirstPlayerPosition() {
@@ -220,7 +241,7 @@ $(function() {
                 if (balls[key].active) {
                     $('.item[user="' + balls[key].user + '"] .score').html(Math.abs(balls[key].position.x - 1).toFixed(0) + ' pts');
                 }
-                if (balls[key].position.z < -30) {
+                if (balls[key].position.z < -27) {
                     if (balls[key].active) {
                         balls[key].active = false;
                         activePlayers--;
@@ -234,7 +255,7 @@ $(function() {
                     balls[key].active = false;
                     balls[key].position.y -= 0.8;
                     balls[key].position.z -= 0.4;
-                } else if (balls[key].position.z > 30) {
+                } else if (balls[key].position.z > 27) {
                     if (balls[key].active) {
                         balls[key].active = false;
                         activePlayers--;
@@ -259,7 +280,6 @@ $(function() {
                         });
                     }
                     balls[key].position.y -= 0.4;
-                    balls[key].position.x += 0.4;
                 }
             }
         }
@@ -281,7 +301,7 @@ $(function() {
 
             var makeHoleSpotNumber = rowCount % 3 == 0 ? Math.round(Math.random() * 5) + 1 : 0;
             var makeMountainSpotNumber = rowCount % 4 == 0 ? Math.round(Math.random() * 5) + 1 : 0;
-            if (rowCount <= 25){
+            if (rowCount <= 10){
                 makeHoleSpotNumber = 0;
                 makeMountainSpotNumber = 0;
             }
@@ -345,7 +365,6 @@ $(function() {
 
     socket.on('updateMessage', function(msg) {
         var that = this;
-        console.log('update', msg)
         if (users.indexOf(msg.username) == -1 && !gameStarted) {
             users.push(msg.username);
             var scoreboardItem = "<div class='item disabled' user='" + msg.username + "'><div class='player'>" + msg.username + "</div><div class='score'>0pts</div></div>";
@@ -362,16 +381,16 @@ $(function() {
         if (!msg.id || msg.id === '') return;
         if (!gameStarted) return;
         if (!balls[msg.id].ready || !balls[msg.id].active) return;
-        balls[msg.id].vector.x += msg.x/20;
-        if (balls[msg.id].vector.x > 10){
-            balls[msg.id].vector.x = 10;
+        balls[msg.id].vector.x += Math.abs(msg.x - 10)/20;
+        if (balls[msg.id].vector.x > 8){
+            balls[msg.id].vector.x = 8;
         }
         if (balls[msg.id].vector.x < 0){
             balls[msg.id].vector.x = 0;
         }
 
         balls[msg.id].vector.y += msg.y/5;
-        balls[msg.id].vector.y = Math.min(10, Math.abs(balls[msg.id].vector.y)) * Math.sign(balls[msg.id].vector.y);
+        balls[msg.id].vector.y = Math.min(8, Math.abs(balls[msg.id].vector.y)) * Math.sign(balls[msg.id].vector.y);
 
         if (!msg.id || msg.id === '') return;
         handleCollisions(msg.id);
@@ -384,7 +403,6 @@ $(function() {
                     sphere2 = balls[key];
                 var kx = Math.round(Math.abs(sphere1.position.x/10)) + 1;
                 var ky = getYPosition(sphere1.position.z);
-                console.log(kx+" "+ky);
                 if (barricades[kx][ky] == "block"){
                     sphere1.vector.x = 0;
                 }
@@ -401,18 +419,46 @@ $(function() {
                 var kx = Math.round(Math.abs(sphere1.position.x/10));
                 var ky = getYPosition(sphere1.position.z);
                 if (barricades[kx][ky] == "hole"){
-                    sphere1.isFalling = true;
+                    var xHole = -kx * 10,
+                        yHole = getCoordinatesHole(ky),
+                        xSphere = sphere1.position.x,
+                        ySphere = sphere1.position.z;
+                    console.log(Math.pow(xHole - xSphere, 2) + Math.pow(yHole - ySphere, 2));
+                    if (Math.pow(xHole - xSphere, 2) + Math.pow(yHole - ySphere, 2) <= 25){
+                        sphere1.isFalling = true;
+                    }
                 }
                 if (getPythogarExpression(sphere1.position.x, sphere2.position.x, sphere1.position.z, sphere2.position.z)){
                     changeVectors(sphere1, sphere2);
-                    sphere1.position.x += -sphere1.vector.x/20;
-                    sphere1.position.z += -sphere1.vector.y/20;
+                    sphere1.position.x += -sphere1.vector.x/30;
+                    sphere1.position.z += -sphere1.vector.y/30;
                 }
                 else {
-                    sphere1.position.x += -sphere1.vector.x/20;
-                    sphere1.position.z += -sphere1.vector.y/20;
+                    sphere1.position.x += -sphere1.vector.x/30;
+                    sphere1.position.z += -sphere1.vector.y/30;
                 }
             }
+        }
+    }
+
+    function getCoordinatesHole(y){
+        if (y == 0){
+            return 25;
+        }
+        if (y == 1){
+            return 15;
+        }
+        if (y == 2){
+            return 5;
+        }
+        if (y == 3){
+            return -5;
+        }
+        if (y == 4){
+            return -15;
+        }
+        if (y == 5){
+            return -25;
         }
     }
 
