@@ -69,6 +69,7 @@ $(function() {
                 $('#username').addClass('wrong');
                 return;
             }
+            username = username.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
             $('.login').remove();
             if (!localStorage[username]) {
                 console.log('New user');
