@@ -105,6 +105,7 @@ $(function() {
         renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMapEnabled = true;
+        renderer.setClearColor( "#ffffff", 1 );
         generateTiles(12);
         console.log(barricades);
 
@@ -123,7 +124,7 @@ $(function() {
         // Load the background texture
         var texture = THREE.ImageUtils.loadTexture( '../bg.jpg' );
         var backgroundMesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(2, 2, 0),
+            new THREE.PlaneGeometry(1, 1, 0),
             new THREE.MeshBasicMaterial({
                 map: texture
             }));
@@ -136,30 +137,11 @@ $(function() {
         backgroundCamera = new THREE.Camera();
         backgroundScene .add(backgroundCamera );
         backgroundScene .add(backgroundMesh );
-        renderer.render(backgroundScene, backgroundCamera);
 
         // add the output of the renderer to the html element
         $("body").append(renderer.domElement);
     }
 
-    function initBg() {
-        var texture = THREE.ImageUtils.loadTexture('../bg.jpg');
-        var backgroundMesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(2, 2, 0),
-            new THREE.MeshBasicMaterial({
-                map: texture
-            }));
-
-        backgroundMesh.material.depthTest = false;
-        backgroundMesh.material.depthWrite = false;
-
-        // Create your background scene
-        backgroundScene = new THREE.Scene();
-        backgroundCamera = new THREE.Camera();
-        backgroundScene.add(backgroundCamera);
-        backgroundScene.add(backgroundMesh);
-
-    }
 
     function animate() {
         // render using requestAnimationFrame
@@ -199,8 +181,9 @@ $(function() {
             }
         }
 
-        renderer.render(scene, camera);
         renderer.render(backgroundScene, backgroundCamera);
+        renderer.render(scene, camera);
+
     }
 
     function getFirstPlayerPosition() {
