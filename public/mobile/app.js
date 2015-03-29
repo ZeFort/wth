@@ -1,3 +1,5 @@
+var colors = [0x1abc9c, 0x27ae60, 0x2980b9, 0x8e44ad, 0x2c3e50, 0xf39c12, 0xc0392b, 0xbdc3c7, 0x7f8c8d];
+
 var socket = io.connect(window.ip + ':3010');
 
 setInterval(function() {
@@ -40,6 +42,8 @@ socket.on('playerWin', function(msg) {
 });
 
 
+
+
 $(function() {
     username = '';
 
@@ -74,7 +78,7 @@ $(function() {
             if (!localStorage[username]) {
                 console.log('New user');
                 id = '' + Math.floor(Math.random() * 254);
-                color = Math.floor(Math.random() * 0xffffff);
+                color = colors[Math.floor(Math.random() * colors.length)];
                 localStorage[username] = JSON.stringify({
                     id: id,
                     color: color
