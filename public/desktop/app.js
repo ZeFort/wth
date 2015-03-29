@@ -42,7 +42,7 @@ socket.on('disconnectUser', function(msg) {
 var balls = [];
 var users = [];
 var readyPlayerCount = 0;
-var needToStart = 2;
+var needToStart = 1;
 var activePlayers = needToStart;
 var gameStarted = false;
 var countSphere = 0;
@@ -505,6 +505,8 @@ $(function() {
                         socket.emit('gameStarted', {});
                         gameStarted = true;
                         $('.timer').remove();
+                        var audio = new Audio('../sound.mp3');
+                        audio.play();
                     }
                     time--;
                     $('.timer').html('' + time + '...');
