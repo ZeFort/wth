@@ -21,6 +21,15 @@ var needToStart = 2;
 var activePlayers = needToStart;
 var gameStarted = false;
 var countSphere = 0;
+var rowCount = 0;
+
+var n = 6, m = 500;
+var barricades = [];
+for (var i = 0; i < m; i++){
+    barricades[i] = [];
+    for (var j = 0; j < n; j++){
+        barricades[i][j] = "none";
+    }}
 
 var scene, camera, renderer, backgroundScene, backgroundCamera;
 var R = 2;
@@ -37,6 +46,7 @@ $(function() {
         var planeMaterial = new THREE.MeshLambertMaterial({
             color: col || 0xffffff
         });
+
         var plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.receiveShadow = true;
         plane.position.x = x;
@@ -71,6 +81,7 @@ $(function() {
         renderer.shadowMapEnabled = true;
         renderer.setClearColor( 0xffffff, 1);
         generateTiles(12);
+        console.log(barricades);
 
         // position and point the camera to the center of the scene
         updateCameraPosition(camera, 40);
@@ -130,7 +141,6 @@ $(function() {
 
         renderer.render(scene, camera);
 
-
         if (activePlayers <= 1) {
             gameStarted = false;
 
@@ -186,6 +196,7 @@ $(function() {
                 }
                 if (balls[key].position.z < -30) {
                     if (balls[key].active) {
+                        balls[key].active = false;
                         activePlayers--;
                         $('.item[user="' + balls[key].user + '"]').addClass('disabled');
                         var message = (activePlayers > 0) ? 'playerLose' : 'playerWin';
@@ -210,6 +221,19 @@ $(function() {
                     }
                     balls[key].position.y -= 0.8;
                     balls[key].position.z += 0.4;
+                }else if(balls[key].isFalling){
+                    if (balls[key].active) {
+                        balls[key].active = false;
+                        activePlayers--;
+                        $('.item[user="' + balls[key].user + '"]').addClass('disabled');
+                        var message = (activePlayers > 0) ? 'playerLose' : 'playerWin';
+                        socket.emit(message, {
+                            user: balls[key].user,
+                            score: Math.abs(balls[key].position.x - 1).toFixed(0)
+                        });
+                    }
+                    balls[key].position.y -= 0.4;
+                    balls[key].position.x += 0.4;
                 }
             }
         }
@@ -221,7 +245,6 @@ $(function() {
         cam.position.z = 0;
     }
 
-    var rowCount = 0;
 
     function generateTiles(count) {
         count = count || 1;
@@ -230,12 +253,67 @@ $(function() {
             if (rowCount % 2 === 0)
                 clr = 0x2c3e50;
 
-            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 5, clr);
-            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 15, clr);
-            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -5, clr);
-            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -15, clr);
-            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, 25, clr);
-            addPlane(scene, 10, 1, 10, -10 * rowCount, 0, -25, clr);
+            var makeHoleSpotNumber = rowCount % 3 == 0 ? Math.round(Math.random() * 5) + 1 : 0;
+            var makeMountainSpotNumber = rowCount % 4 == 0 ? Math.round(Math.random() * 5) + 1 : 0;
+            if (rowCount <= 25){
+                makeHoleSpotNumber = 0;
+                makeMountainSpotNumber = 0;
+            }
+            if(makeHoleSpotNumber !== 1){
+                if (makeMountainSpotNumber == 1){
+                    barricades[rowCount][2] = "block";
+                }
+                addPlane(scene, 10, makeMountainSpotNumber == 1 ? 6 : 1, 10,
+                    -10 * rowCount, makeMountainSpotNumber == 1 ? 3 : 0, 5, clr);
+            }else{
+                barricades[rowCount][2] = "hole";
+            }
+            if(makeHoleSpotNumber !== 2){
+                if (makeMountainSpotNumber == 2){
+                    barricades[rowCount][1] = "block";
+                }
+                addPlane(scene, 10, makeMountainSpotNumber == 2 ? 6 : 1, 10,
+                    -10 * rowCount, makeMountainSpotNumber == 2 ? 3 : 0, 15, clr);
+            }else{
+                barricades[rowCount][1] = "hole";
+            }
+            if(makeHoleSpotNumber !== 3){
+                if (makeMountainSpotNumber == 3){
+                    barricades[rowCount][3] = "block";
+                }
+                addPlane(scene, 10, makeMountainSpotNumber == 3 ? 6 : 1, 10,
+                    -10 * rowCount, makeMountainSpotNumber == 3 ? 3 : 0, -5, clr);
+            }else{
+                barricades[rowCount][3] = "hole";
+            }
+            if(makeHoleSpotNumber !== 4){
+                if (makeMountainSpotNumber == 4){
+                    barricades[rowCount][4] = "block";
+                }
+                addPlane(scene, 10, makeMountainSpotNumber == 4 ? 6 : 1, 10,
+                    -10 * rowCount, makeMountainSpotNumber == 4 ? 3 : 0, -15, clr);
+            }else{
+                barricades[rowCount][4] = "hole";
+            }
+            if(makeHoleSpotNumber !== 5){
+                if (makeMountainSpotNumber == 5){
+                    barricades[rowCount][0] = "block";
+                }
+                addPlane(scene, 10, makeMountainSpotNumber == 5 ? 6 : 1, 10,
+                    -10 * rowCount, makeMountainSpotNumber == 5 ? 3 : 0, 25, clr);
+            }else{
+                barricades[rowCount][0] = "hole";
+            }
+            if(makeHoleSpotNumber !== 6){
+                if (makeMountainSpotNumber == 6){
+                    barricades[rowCount][5] = "block";
+                }
+                addPlane(scene, 10, makeMountainSpotNumber == 6 ? 6 : 1, 10,
+                    -10 * rowCount, makeMountainSpotNumber == 6 ? 3 : 0, -25, clr);
+            }else{
+                barricades[rowCount][5] = "hole";
+            }
+
         }
     }
 
@@ -254,7 +332,6 @@ $(function() {
         if (!msg.id || msg.id === '') return;
         if (!gameStarted) return;
         if (!balls[msg.id].ready || !balls[msg.id].active) return;
-        console.log(balls[msg.id].vector.x, balls[msg.id].vector.y);
         balls[msg.id].vector.x += msg.x/20;
         if (balls[msg.id].vector.x > 10){
             balls[msg.id].vector.x = 10;
@@ -275,6 +352,27 @@ $(function() {
             if(balls.hasOwnProperty(key) && (id !== key)){
                 var sphere1 = balls[id],
                     sphere2 = balls[key];
+                var kx = Math.round(Math.abs(sphere1.position.x/10)) + 1;
+                var ky = getYPosition(sphere1.position.z);
+                console.log(kx+" "+ky);
+                if (barricades[kx][ky] == "block"){
+                    sphere1.vector.x = 0;
+                }
+                if (barricades[kx-1][ky-1] == "block"){
+                    if (sphere1.vector.y < 0){
+                        sphere1.vector.y = 0;
+                    }
+                }
+                if (barricades[kx-1][ky+1] == "block"){
+                    if (sphere1.vector.y > 0){
+                        sphere1.vector.y = 0;
+                    }
+                }
+                var kx = Math.round(Math.abs(sphere1.position.x/10));
+                var ky = getYPosition(sphere1.position.z);
+                if (barricades[kx][ky] == "hole"){
+                    sphere1.isFalling = true;
+                }
                 if (getPythogarExpression(sphere1.position.x, sphere2.position.x, sphere1.position.z, sphere2.position.z)){
                     changeVectors(sphere1, sphere2);
                     sphere1.position.x += -sphere1.vector.x/20;
@@ -284,9 +382,28 @@ $(function() {
                     sphere1.position.x += -sphere1.vector.x/20;
                     sphere1.position.z += -sphere1.vector.y/20;
                 }
-                //console.log(sphere1.position.x, sphere1.position.z);
-
             }
+        }
+    }
+
+    function getYPosition(y){
+        if (y >= -35 && y < -25){
+            return 5;
+        }
+        if (y >= -25 && y < -15){
+            return 4;
+        }
+        if (y >= -15 && y < -5){
+            return 3;
+        }
+        if (y >= -5 && y < 5){
+            return 2;
+        }
+        if (y >= 5 && y < 15){
+            return 1;
+        }
+        if (y >= 15 && y <= 25){
+            return 0;
         }
     }
 
