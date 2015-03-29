@@ -85,8 +85,11 @@ $(function() {
                 color = JSON.parse(localStorage[username]).color;
             }
             console.log(id);
-            $(".color").css({
+            $("body").css({
                 "background": "#" + color.toString(16)
+            });
+            $("html").css({
+                "background": "rgba(0,0,0,0)"
             });
 
             socket.emit('updateMessage', {
