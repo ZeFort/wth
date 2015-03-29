@@ -104,12 +104,13 @@ $(function() {
     function init() {
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        renderer = new THREE.WebGLRenderer();
+        renderer = new THREE.WebGLRenderer({
+            alpha: true
+        });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMapEnabled = true;
         renderer.setClearColor(0xffffff, 1);
         generateTiles(12);
-        console.log(barricades);
 
         // position and point the camera to the center of the scene
         updateCameraPosition(camera, 40);
@@ -124,21 +125,21 @@ $(function() {
         scene.add(spotLight);
 
         // Load the background texture
-        var texture = THREE.ImageUtils.loadTexture( '../bg.jpg' );
+        var texture = THREE.ImageUtils.loadTexture('../bg.jpg');
         var backgroundMesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(1, 1, 0),
+            new THREE.PlaneGeometry(2, 2, 0),
             new THREE.MeshBasicMaterial({
                 map: texture
             }));
 
-        backgroundMesh .material.depthTest = false;
-        backgroundMesh .material.depthWrite = false;
+        backgroundMesh.material.depthTest = false;
+        backgroundMesh.material.depthWrite = false;
 
         // Create your background scene
         backgroundScene = new THREE.Scene();
         backgroundCamera = new THREE.Camera();
-        backgroundScene .add(backgroundCamera );
-        backgroundScene .add(backgroundMesh );
+        backgroundScene.add(backgroundCamera);
+        backgroundScene.add(backgroundMesh);
 
         // add the output of the renderer to the html element
         $("body").append(renderer.domElement);
@@ -160,6 +161,9 @@ $(function() {
 
         handleCrossingTheLine();
         handleInvisiblePlayers();
+        for (var key in balls)
+            if (balls.hasOwnProperty(key)) handleHolesAndBlocks(key);
+
         updateCameraPosition(camera, longestX + 40);
 
         if (framesCount++ >= 15) {
@@ -167,7 +171,11 @@ $(function() {
             generateTiles();
         }
 
-
+        renderer.autoClear = false;
+        renderer.clear();
+        renderer.render(backgroundScene, backgroundCamera);
+        renderer.render(scene, camera);
+        //return;
 
         if (activePlayers <= 1) {
             gameStarted = false;
@@ -182,9 +190,6 @@ $(function() {
                 }
             }
         }
-
-        renderer.render(backgroundScene, backgroundCamera);
-        renderer.render(scene, camera);
 
     }
 
@@ -286,7 +291,7 @@ $(function() {
 
             var makeHoleSpotNumber = rowCount % 3 == 0 ? Math.round(Math.random() * 5) + 1 : 0;
             var makeMountainSpotNumber = rowCount % 4 == 0 ? Math.round(Math.random() * 5) + 1 : 0;
-            if (rowCount <= 10){
+            if (rowCount <= 10) {
                 makeHoleSpotNumber = 0;
                 makeMountainSpotNumber = 0;
             }
@@ -363,29 +368,28 @@ $(function() {
         if (!msg.id || msg.id === '') return;
         if (!gameStarted) return;
         if (!balls[msg.id].ready || !balls[msg.id].active) return;
-        balls[msg.id].vector.x += Math.abs(msg.x - 10)/20;
-        if (balls[msg.id].vector.x > 8){
+        balls[msg.id].vector.x += Math.abs(msg.x - 10) / 20;
+        if (balls[msg.id].vector.x > 8) {
             balls[msg.id].vector.x = 8;
         }
         if (balls[msg.id].vector.x < 0) {
             balls[msg.id].vector.x = 0;
         }
 
-        balls[msg.id].vector.y += msg.y/5;
+        balls[msg.id].vector.y += msg.y / 5;
         balls[msg.id].vector.y = Math.min(8, Math.abs(balls[msg.id].vector.y)) * Math.sign(balls[msg.id].vector.y);
 
-        if (!msg.id || msg.id === '') return;
         handleCollisions(msg.id);
     });
 
-    function handleCollisions(id) {
+    function handleHolesAndBlocks(id) {
         for (var key in balls) {
             if (balls.hasOwnProperty(key) && (id !== key)) {
                 var sphere1 = balls[id],
                     sphere2 = balls[key];
                 var kx = Math.round(Math.abs(sphere1.position.x / 10)) + 1;
                 var ky = getYPosition(sphere1.position.z);
-                if (barricades[kx][ky] == "block"){
+                if (barricades[kx][ky] == "block") {
                     sphere1.vector.x = 0;
                 }
                 if (barricades[kx - 1][ky - 1] == "block") {
@@ -400,16 +404,25 @@ $(function() {
                 }
                 var kx = Math.round(Math.abs(sphere1.position.x / 10));
                 var ky = getYPosition(sphere1.position.z);
-                if (barricades[kx][ky] == "hole"){
+                if (barricades[kx][ky] == "hole") {
                     var xHole = -kx * 10,
                         yHole = getCoordinatesHole(ky),
                         xSphere = sphere1.position.x,
                         ySphere = sphere1.position.z;
                     console.log(Math.pow(xHole - xSphere, 2) + Math.pow(yHole - ySphere, 2));
-                    if (Math.pow(xHole - xSphere, 2) + Math.pow(yHole - ySphere, 2) <= 25){
+                    if (Math.pow(xHole - xSphere, 2) + Math.pow(yHole - ySphere, 2) <= 50) {
                         sphere1.isFalling = true;
                     }
                 }
+            }
+        }
+    };
+
+    function handleCollisions(id) {
+        for (var key in balls) {
+            if (balls.hasOwnProperty(key) && (id !== key)) {
+                var sphere1 = balls[id],
+                    sphere2 = balls[key];
                 if (getPythogarExpression(sphere1.position.x, sphere2.position.x, sphere1.position.z, sphere2.position.z)) {
                     changeVectors(sphere1, sphere2);
                     sphere1.position.x += -sphere1.vector.x / 20;
@@ -422,23 +435,23 @@ $(function() {
         }
     }
 
-    function getCoordinatesHole(y){
-        if (y == 0){
+    function getCoordinatesHole(y) {
+        if (y == 0) {
             return 25;
         }
-        if (y == 1){
+        if (y == 1) {
             return 15;
         }
-        if (y == 2){
+        if (y == 2) {
             return 5;
         }
-        if (y == 3){
+        if (y == 3) {
             return -5;
         }
-        if (y == 4){
+        if (y == 4) {
             return -15;
         }
-        if (y == 5){
+        if (y == 5) {
             return -25;
         }
     }
