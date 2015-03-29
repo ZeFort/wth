@@ -20,7 +20,7 @@ app.get('/start', function(req, res) {
     else res.redirect('/desktop');
 });
 
-app.get('/game', function(req, res){
+app.get('/game', function(req, res) {
     res.sendFile(__dirname + '/views/start.html')
 });
 
@@ -77,10 +77,22 @@ io.on('connection', function(socket) {
         io.emit('updateMessage', msg);
     });
 
+    socket.on('disconnectUser', function(msg) {
+        io.emit('disconnectUser', msg);
+    });
+
+    socket.on('usernames', function(msg) {
+        io.emit('usernames', msg);
+    });
+
+    socket.on('usernameList', function(msg) {
+        io.emit('usernameList', msg);
+    });
+
     socket.on('gameStarted', function(msg) {
         io.emit('gameStarted', msg);
     });
-    
+
     socket.on('refresh', function(msg) {
         io.emit('refresh', msg);
     });

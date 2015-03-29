@@ -4,9 +4,11 @@ setInterval(function() {
     if (status) {
         $('.status').addClass('connected');
         $('.status').removeClass('disconnected');
+        $('.status').removeClass('pending');
     } else {
         $('.status').removeClass('connected');
         $('.status').addClass('disconnected');
+        $('.status').removeClass('pending');
     }
 }, 1000);
 
@@ -15,7 +17,30 @@ socket.on('refresh', function(msg) {
     document.location.reload();
 });
 
+socket.on('usernames', function(msg) {
+    socket.emit('usernameList', {
+        list: users
+    });
+});
+
+socket.on('disconnectUser', function(msg) {
+    console.log('disconnected', msg);
+    if (balls[msg.id]) {
+        readyPlayerCount--;
+        if (readyPlayerCount < 0) readyPlayerCount = 0;
+        $('.elapsed-players').html((needToStart - readyPlayerCount) + '');
+        balls[msg.id].active = false;
+        balls[msg.id].ready = false;
+        $('.item[user="' + msg.username + '"]').remove();
+        var i = users.indexOf(msg.username);
+        if (i > -1) {
+            delete users[i];
+        }
+    }
+});
+
 var balls = [];
+var users = [];
 var readyPlayerCount = 0;
 var needToStart = 2;
 var activePlayers = needToStart;
@@ -36,7 +61,8 @@ var R = 2;
 
 $(function() {
     $('.elapsed-players').html(needToStart + '');
-    $('.refresh').click(function() {
+    $('.refresh').click(function(e) {
+        e.preventDefault();
         socket.emit('refresh', {});
         socket.disconnect();
         document.location.reload();
@@ -319,14 +345,18 @@ $(function() {
 
     socket.on('updateMessage', function(msg) {
         var that = this;
+        console.log('update', msg)
+        if (users.indexOf(msg.username) == -1 && !gameStarted) {
+            users.push(msg.username);
+            var scoreboardItem = "<div class='item disabled' user='" + msg.username + "'><div class='player'>" + msg.username + "</div><div class='score'>0pts</div></div>";
+            $('.scoreboard').append(scoreboardItem);
+        }
         if (!balls[msg.id] && !gameStarted) {
             console.log(countSphere);
             balls[msg.id] = addSphere(scene, R, msg.x, 5, 10 * countSphere , msg.color || 0xabcdef);
             balls[msg.id].vector = {x: 0, y: 0};
             countSphere++;
             balls[msg.id].user = msg.username;
-            var scoreboardItem = "<div class='item' user='" + msg.username + "'><div class='player'>" + msg.username + "</div><div class='score'>0pts</div></div>";
-            $('.scoreboard').append(scoreboardItem);
         }
 
         if (!msg.id || msg.id === '') return;
@@ -434,6 +464,7 @@ $(function() {
             balls[msg.id].active = true;
             readyPlayerCount++;
             $('.elapsed-players').html((needToStart - readyPlayerCount) + '');
+            $('.item[user="' + msg.username + '"]').removeClass('disabled');
             if (readyPlayerCount === needToStart) {
                 $('.waiting').remove();
                 var time = 5;

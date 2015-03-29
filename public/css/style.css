@@ -74,8 +74,8 @@ body, html {
 .status {
   position: fixed;
   z-index: 1000;
-  width: 10px;
-  height: 10px;
+  width: 20px;
+  height: 20px;
   bottom: 10px;
   left: 10px;
   border-radius: 50%;
@@ -90,6 +90,9 @@ body, html {
   background: #2ecc71;
 }
 
+.pending {
+  background: #f39c12;
+}
 
 .item .player, .item .score {
   display: inline-block;
@@ -171,6 +174,7 @@ body, html {
 }
 
 .refresh {
+  background-color: rgba(0,0,0,0);
   background-image: url('/refresh.png');
   background-size: cover;
   cursor: pointer;
